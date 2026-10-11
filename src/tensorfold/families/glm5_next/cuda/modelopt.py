@@ -80,3 +80,32 @@ def experts(rd, prefix: str, count: int, device: torch.device, limit: float) -> 
     ex = nvx.make(parts["gate_proj"], parts["up_proj"], parts["down_proj"], limit=limit)
     del parts
     return ex
+
+
+# -- 8-bit projections as stored ---------------------------------------------------------------------------------
+
+def _stored(rd, name: str, device: torch.device):
+    """``name``'s weight and its 8-bit layout: ("mx8", w, e8m0 scales), ("fp8b", w, scale_inv) or ("b16", None, None)."""
+
+    w = rd.get(name + ".weight").to(device)
+    if w.dtype == torch.float8_e4m3fn and has(rd, name + ".weight_scale_inv"):
+        return "fp8b", w, rd.get(name + ".weight_scale_inv").to(device, torch.float32)
+    if w.dtype == torch.float8_e4m3fn and has(rd, name + ".weight_scale"):
+        return "mx8", w, rd.get(name + ".weight_scale").to(device)
+    return "b16", None, None
+
+
+def linears(rd, names: list[str], device: torch.device):
+    """``names`` (one input) as one projection on the 8-bit kernels when all are stored alike, else None (BF16)."""
+
+    from tensorfold.cuda.nvfp4.linear import Fp8BlockLinear, Mx8Linear
+
+    parts = [_stored(rd, n, device) for n in names]
+    kinds = {p[0] for p in parts}
+    if kinds == {"mx8"}:
+        return Mx8Linear.from_checkpoint(torch.cat([p[1] for p in parts]), torch.cat([p[2] for p in parts]))
+    if kinds == {"fp8b"}:
+        w = torch.cat([p[1] for p in parts])
+        cols = torch.cat([Fp8BlockLinear.column_scales(p[2], p[1].shape[0], p[1].shape[1]) for p in parts])
+        return Fp8BlockLinear.from_rows(w, cols)
+    return None

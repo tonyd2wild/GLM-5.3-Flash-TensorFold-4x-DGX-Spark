@@ -221,6 +221,12 @@ B16_CONFIG = {16: (4, 3), 32: (4, 3), 64: (4, 2), 128: (8, 2)}
 def matmul(x: torch.Tensor, q: Q4 | B16, xs: torch.Tensor | None = None, *, out: torch.Tensor | None = None,
            f32: bool = False, part: torch.Tensor | None = None) -> torch.Tensor:
     """Multiply strided bf16 x by Q4 or BF16 q.T, returning bf16 or unrounded fp32 with f32; BF16 weights ignore xs."""
+    if hasattr(q, "w8"):                              # an 8-bit projection as stored (MXFP8 or FP8 blocks): bf16 out
+        y = q(x)
+        if out is not None:
+            out.copy_(y)
+            return out
+        return y.float() if f32 else y
 
     if isinstance(q, B16):
         return _matmul_b16(x, q, out=out, f32=f32, part=part)

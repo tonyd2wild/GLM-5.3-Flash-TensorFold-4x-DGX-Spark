@@ -250,6 +250,9 @@ def mm(b: Buffers, x: torch.Tensor, q, xs: torch.Tensor | None, out: torch.Tenso
 
     if b.prefill and isinstance(q, qmm.Q4):
         return shared.prefill_matmul(x, q, f32=f32, out=out)
+    if b.prefill and hasattr(q, "w8"):                # 8-bit projections: the prompt GEMM over the stored bytes
+        out.copy_(q.prefill(x))
+        return out
     return qmm.matmul(x, q, xs, out=out, f32=f32, part=b.sk)
 
 
