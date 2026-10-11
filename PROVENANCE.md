@@ -49,6 +49,7 @@ license file and every mention of them. Commits authored by others are kept.
 | `vision/glm_cuda.py` (vision tower, processor, prompt expansion) | vLLM `models/glm5next/nvidia/multimodal.py` and `transformers_utils/processors/glm5next.py` | Apache-2.0 (vLLM contributors) |
 | engine wiring: TP4 rank checks, image rows across ranks, NVFP4 MoE dispatch, 8-bit linears, index-aware capacity scan, split rules for scalars / FP8 / pack markers | ours | ours, on Apache-2.0 code |
 | `deploy/tf_tp4.sh` | ours (fleet NCCL / RoCE settings from our live deployment) | ours |
+| `deploy/serve_exl3.sh`, `bench/qcheck.py` (the quality check) | ours | ours |
 | benchmark harness `bench/bench_tp2_night.py` | our own (tonyd2wild speed-night harness) | ours |
 
 ## References consulted (no code copied unless listed above)
@@ -56,4 +57,6 @@ license file and every mention of them. Commits authored by others are kept.
 | reference | license | used for |
 |---|---|---|
 | vLLM `models/glm5next/nvidia/` (in our v11 image) | Apache-2.0 | GLM-5.3-Flash vision tower and weight layout |
-| knapcio/GLM-5.3-Flash-4x-DGX-Spark-TP4 | MIT | the lossless8 checkpoint layout we serve |
+| knapcio/GLM-5.3-Flash-4x-DGX-Spark-TP4 | MIT | the lossless8 checkpoint layout of our NVFP4 pack |
+| brandonmusic/GLM-5.3-Flash-tr3-4bpw | ShapleyMCG License 1.0 | the EXL3 checkpoint served (read as published, not redistributed) |
+| ashhart/TensorFold `docs/recipes` (glm-5.3-flash, cuda, exl3) | Apache-2.0 | EXL3 over NVFP4 for GLM; GLM on CUDA serialized upstream |

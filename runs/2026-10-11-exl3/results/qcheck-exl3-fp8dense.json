@@ -1,0 +1,89 @@
+{
+ "label": "exl3-fp8",
+ "url": "http://127.0.0.1:8000",
+ "when": "2026-10-11 23:38:02",
+ "cases": {
+  "math": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 4,
+   "seconds": 0.26,
+   "reply": "215"
+  },
+  "math2": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 4,
+   "seconds": 0.14,
+   "reply": "391"
+  },
+  "json": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 18,
+   "seconds": 0.3,
+   "reply": "{\"name\": \"Maria\", \"age\": 34}"
+  },
+  "code": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 84,
+   "seconds": 0.68,
+   "reply": "```python\ndef is_prime(n):\n    if n < 2:\n        return False\n    if n < 4:\n        return True\n    if n % 2 == 0:\n        return False\n    i = 3\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 2\n    return True\n```"
+  },
+  "fr_code": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 384,
+   "seconds": 3.59,
+   "reply": "# Inverser une chaîne de caractères en Python\n\n## Méthode simple (recommandée)\n\n```python\ndef inverser_chaine(chaine):\n    return chaine[::-1]\n```\n\n**Exemple d'utilisation :**\n\n```python\nprint(inverser_chaine(\"Bonjour\"))  # Output: ruojnoB\nprint(inverser_chaine(\"Python\"))   # Output: nohtyP\n```\n\nLa syntaxe `[::-1]` utilise le *slicing* : on parcourt la chaîne du début à la fin avec un pas de -1, donc à l'envers.\n\n## Autres méthodes\n\n### Avec `reversed()` et `join()`\n\n```python\ndef inverser_chaine(chaine):\n    return \"\".join(reversed(chaine))\n```\n\n### Avec une boucle (approche pédagogique)\n\n```"
+  },
+  "fr_short": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 9,
+   "seconds": 0.18,
+   "reply": "La capitale du Canada est Ottawa."
+  },
+  "es_short": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 8,
+   "seconds": 0.18,
+   "reply": "Una semana tiene siete días."
+  },
+  "zh_short": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 7,
+   "seconds": 0.16,
+   "reply": "日本的首都是东京。"
+  },
+  "fact": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 4,
+   "seconds": 0.13,
+   "reply": "Mercury"
+  },
+  "reason": {
+   "ok": true,
+   "finish": "stop",
+   "hit": true,
+   "tokens": 36,
+   "seconds": 0.61,
+   "reply": "Yes — since all bloops are razzies and all razzies are lazzies, every bloop must also be a lazzie by transitivity."
+  }
+ },
+ "passed": 10,
+ "total": 10
+}
