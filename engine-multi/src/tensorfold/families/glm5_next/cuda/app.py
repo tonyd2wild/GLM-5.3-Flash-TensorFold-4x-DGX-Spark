@@ -51,10 +51,20 @@ def media_template(inner, model_dir) -> None:
     """Swap the checkpoint template's no-media reminder for GLM's image and video markers."""
 
     source = (model_dir / "chat_template.jinja").read_text()
-    if source.count(_NO_MEDIA) != 1:
-        raise ValueError("--vision: this checkpoint's chat template has no media branch TensorFold knows how to "
-                         "extend (GLM-5.3 Flash's chat_template.jinja)")
-    inner.template = inner.template.environment.from_string(source.replace(_NO_MEDIA, _MEDIA))
+    if source.count(_NO_MEDIA) == 1:
+        inner.template = inner.template.environment.from_string(source.replace(_NO_MEDIA, _MEDIA))
+        return
+    # a template that writes GLM's markers itself (emit_image / emit_video macros, as in ModelOpt packs): each media
+    # part's tf_mark goes before them, so the server can find its parts
+    if "{{- emit_image() -}}" in source:
+        for kind in ("image", "video"):
+            source = source.replace("{{- emit_%s() -}}" % kind,
+                                    "{%- if item is defined and item.tf_mark is defined -%}{{- item.tf_mark -}}"
+                                    "{%- endif -%}{{- emit_" + kind + "() -}}")
+        inner.template = inner.template.environment.from_string(source)
+        return
+    raise ValueError("--vision: this checkpoint's chat template has no media branch TensorFold knows how to "
+                     "extend (GLM-5.3 Flash's chat_template.jinja)")
 
 
 class GlmApp(App):
