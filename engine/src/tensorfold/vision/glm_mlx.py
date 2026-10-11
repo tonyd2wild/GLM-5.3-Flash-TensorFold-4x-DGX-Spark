@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from tensorfold.vision.glm_processing import GLMImageProcessor, PreparedGLMVisionPrompt
-from tensorfold.vision.qwen_checkpoint import load_vision_weights, quantization_predicate, vision_tensors
+from tensorfold.vision.checkpoint import load_vision_weights, quantization_predicate, vision_tensors
 
 
 @dataclass(frozen=True)

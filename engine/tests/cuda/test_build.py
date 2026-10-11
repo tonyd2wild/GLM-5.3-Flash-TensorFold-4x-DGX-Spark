@@ -5,8 +5,8 @@ import select
 import subprocess
 import sys
 
-NAME = "tensorfold_qwen4_exp_gdn_io"
-START = "from tensorfold.families.qwen4_exp.cuda import gdn_io; gdn_io._ext()"
+NAME = "tensorfold_glm_kda_v2"
+START = "from tensorfold.families.glm5_next.cuda import kda; kda._ext()"
 
 
 def _start(env: dict) -> subprocess.CompletedProcess:

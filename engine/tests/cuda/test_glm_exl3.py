@@ -3,7 +3,7 @@ bit-by-bit one written from the format description, the layer's weight against i
 two-rank splits against the whole layer. No GPU work.
 
 The decoder was also checked against ExLlamaV3 0.0.43's own ``reconstruct`` and ``get_weight_tensor`` on 12 expert
-matrices of Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw, bit for bit (see the family's docs)."""
+matrices of a TR3 EXL3 checkpoint (brandonmusic/GLM-5.3-Flash-tr3-4bpw), bit for bit (see the family's docs)."""
 
 from __future__ import annotations
 

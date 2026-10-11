@@ -347,7 +347,7 @@ def test_decode_share_zero_prefills_each_prompt_whole_before_any_round_as_before
 def test_the_serve_option_is_refused_where_it_cannot_apply_before_any_download():
     from tensorfold import cli, serve_options
 
-    family = SimpleNamespace(title="Qwen3.8 dense", package=SimpleNamespace(), model_type="qwen3_5")
+    family = SimpleNamespace(title="A family", package=SimpleNamespace(), model_type="test")
     parse = lambda *flags: cli.build_parser().parse_args(["serve", "owner/model", *flags])      # noqa: E731
     assert parse().decode_share is None and parse("--decode-share", "0").decode_share == 0.0
     serve_options.check(parse("--decode-share", "0"), family, "mlx")
@@ -355,5 +355,5 @@ def test_the_serve_option_is_refused_where_it_cannot_apply_before_any_download()
         serve_options.check(parse("--decode-share", "-0.5"), family, "mlx")
     with pytest.raises(ValueError, match="this CUDA engine runs a round after each 1,024 prompt rows"):
         serve_options.check(parse("--decode-share", "0.25"), family, "cuda")
-    flash = SimpleNamespace(title="Flash Next", package=SimpleNamespace(CUDA_DECODE_SHARE=True), model_type="qwen4_exp")
+    flash = SimpleNamespace(title="A sharing family", package=SimpleNamespace(CUDA_DECODE_SHARE=True), model_type="test")
     serve_options.check(parse("--decode-share", "0.25"), flash, "cuda")             # its passes take the share

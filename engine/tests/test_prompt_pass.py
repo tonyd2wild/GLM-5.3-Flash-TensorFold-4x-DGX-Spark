@@ -49,16 +49,6 @@ def _check(one_chunk, one_pass, make_cache, sizes):
 
 
 @pytest.mark.parametrize("sizes", SIZES)
-def test_flash_next_pass(sizes):
-    from test_qwen4_exp_prefill import tiny_model
-
-    model = tiny_model(seed=4)
-    ids = np.random.default_rng(6).integers(6, 97, size=(1, sum(sizes)))
-    _check(lambda a, n, cache: model.hidden(ids[:, a:a + n], cache)[0],
-           lambda cache: model.hidden_pass(ids, cache, sizes)[0], model.make_cache, sizes)
-
-
-@pytest.mark.parametrize("sizes", SIZES)
 def test_glm_pass(tmp_path, sizes):
     from glm5_fakes import TEXT, write_checkpoint
 

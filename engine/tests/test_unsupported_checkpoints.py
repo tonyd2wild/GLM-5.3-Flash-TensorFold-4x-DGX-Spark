@@ -11,7 +11,7 @@ MLX4 = {"model_type": "glm5_next", "quantization": {"group_size": 64, "bits": 4}
         "quantization_config": {"group_size": 64, "bits": 4}}
 EXL3 = {"model_type": "glm5_next", "quantization_config": {"bits": 4, "codebook": "mcg", "quant_method": "exl3",
                                                            "scope": "glm53_routed_experts_only"}}
-NVFP4 = {"model_type": "qwen3_5", "quantization_config": {"quant_method": "modelopt", "quant_algo": "NVFP4"}}
+NVFP4 = {"model_type": "fake_dense", "quantization_config": {"quant_method": "modelopt", "quant_algo": "NVFP4"}}
 
 
 def _family(**members):
@@ -71,7 +71,7 @@ def test_a_family_can_read_every_exl3_codebook_and_width():
         families.require_readable(family, EXL3, "mlx")
 
 
-def test_glm_reads_mias_exl3_checkpoint_as_an_experiment(tmp_path, capsys):
+def test_glm_reads_the_tr3_exl3_checkpoint_as_an_experiment(tmp_path, capsys):
     from tensorfold.families import glm5_next
 
     (tmp_path / "config.json").write_text(json.dumps(EXL3))
@@ -92,16 +92,9 @@ def test_unknown_model_types_point_to_the_recipe_book(tmp_path):
     assert "RUNBOOK.md" in str(refused.value)
 
 
-@pytest.mark.parametrize("kind", ["qwen4_exp", "qwen3_8_flash_next"])
-def test_flash_next_is_found_by_either_model_type_its_exports_carry(tmp_path, kind):
-    config = {"model_type": kind, "text_config": {"model_type": kind + "_text"}}
-    (tmp_path / "config.json").write_text(json.dumps(config))
-    assert families.detect(tmp_path).module == "tensorfold.families.qwen4_exp"
-
-
 def test_serve_refuses_an_unreadable_checkpoint_before_downloading(tmp_path, capsys, monkeypatch):
-    # a GPTQ Qwen3.8 dense checkpoint: no engine of that family reads it (NVFP4 ModelOpt ones it does, on CUDA)
-    (tmp_path / "config.json").write_text(json.dumps({"model_type": "qwen3_5",
+    # a GPTQ GLM-5.3-Flash checkpoint: no engine of that family reads it (EXL3 and ModelOpt ones it does, on CUDA)
+    (tmp_path / "config.json").write_text(json.dumps({"model_type": "glm5_next",
                                                       "quantization_config": {"quant_method": "gptq", "bits": 4}}))
     monkeypatch.setattr(cli.sys, "platform", "linux")
     monkeypatch.setenv("TENSORFOLD_NO_UPDATE_CHECK", "1")
@@ -110,17 +103,7 @@ def test_serve_refuses_an_unreadable_checkpoint_before_downloading(tmp_path, cap
     assert "gptq" in err and "recipe book" in err
 
 
-def test_qwen_dense_reads_nvfp4_on_cuda_only():
-    family = families.families()["qwen3_5"]
-    families.require_readable(family, NVFP4, "cuda")
-    with pytest.raises(ValueError, match="modelopt"):
-        families.require_readable(family, NVFP4, "mlx")
-
-
 @pytest.mark.parametrize("config,named", [
-    ({"model_type": "qwen3_5"}, "none (unquantized weights)"),
-    ({"model_type": "qwen3_5", "tie_word_embeddings": True, "quantization": {"bits": 4, "group_size": 64}},
-     "tied embedding"),
     ({"model_type": "nemotron_h", "quantization": {"bits": 8, "group_size": 64}}, "MLX 8-bit, groups of 64"),
 ])
 def test_serve_refuses_what_the_mac_decoders_cannot_read_before_downloading(tmp_path, capsys, monkeypatch, config,

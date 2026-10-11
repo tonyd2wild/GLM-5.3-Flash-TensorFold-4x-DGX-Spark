@@ -86,7 +86,7 @@ def load(model_dir: Path, *, mtp_head: str = "", mtp_drafts: int | None = None, 
 def engine_settings(model: Any) -> dict[str, Any]:
     """Rows a round verifies at most and, with tensor units, prompt chunks of up to 8,192 tokens where memory allows."""
 
-    from tensorfold.families.qwen3_5 import tensor_units
+    from tensorfold.kernels.device import tensor_units
 
     width = int(getattr(model, "exact_width", 1) or 1)
     settings: dict[str, Any] = {"max_rows": width, "max_draft": max(0, width - 1)}

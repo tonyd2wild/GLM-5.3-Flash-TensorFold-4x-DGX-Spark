@@ -440,7 +440,7 @@ class Concat:
         return sum(p.nbytes() for p in self.parts)
 
     def _run(self, x: torch.Tensor, out: torch.Tensor | None, prefill: bool) -> torch.Tensor:
-        from tensorfold.families.qwen4_exp.cuda import bf16 as b16
+        from tensorfold.cuda.nvfp4 import bf16 as b16
 
         y = out if out is not None else torch.empty((x.shape[0], self.n), dtype=torch.bfloat16, device=x.device)
         c = 0

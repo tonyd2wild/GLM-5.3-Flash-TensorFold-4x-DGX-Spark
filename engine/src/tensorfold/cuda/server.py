@@ -462,14 +462,7 @@ class App:
                 extra["constraint"] = self._grammars().constraint(compiled, think_end=end, spec=spec)
             if prepared.vision is not None:          # a gate's continuation keeps the images, positions extended
                 same = list(ids) == list(prepared.vision.token_ids)
-                if same:
-                    extra["vision"] = prepared.vision
-                elif hasattr(self.vision, "continued"):  # a frontend that extends its own prompts (GLM)
-                    extra["vision"] = self.vision.continued(prepared.vision, ids)
-                else:
-                    from tensorfold.vision.qwen_processing import continued
-
-                    extra["vision"] = continued(prepared.vision, ids, self.vision.frontend.config)
+                extra["vision"] = prepared.vision if same else self.vision.continued(prepared.vision, ids)
             stats = self.engine.generate(ids, count, sampling, feed, **extra)
             if not cached:
                 cached.append(int((stats or {}).get("cached") or 0))

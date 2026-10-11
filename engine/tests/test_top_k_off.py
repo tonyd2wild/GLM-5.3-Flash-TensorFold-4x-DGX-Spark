@@ -92,16 +92,18 @@ def test_nonpositive_top_k_resolves_to_no_filter(top_k):
     assert ChatApp._resolve_sampling(app, {"top_k": top_k}, 1.0, [1]).top_k == 0
 
 
-@pytest.mark.parametrize("backend", ["gpu", "qwen"])
+@pytest.mark.parametrize("backend", ["gpu", "exact"])
 def test_both_family_samplers_treat_minus_one_as_zero(backend):
     mx = pytest.importorskip("mlx.core")
-    from tensorfold.engine.exact_sampling import Sampling
+    from tensorfold.engine.exact_sampling import Sampling, sample_rows, top_candidates
     from tensorfold.engine.gpu_sampling import sample
-    from tensorfold.families.qwen3_5.family import Qwen35Family
+
+    def exact(x, s, p):                                   # the keyed rule the one-request path draws
+        return sample_rows(x, [int(q) for q in p], s, top=top_candidates(x, s))
 
     logits = mx.array([[2.0, 1.9, 1.8, 1.7]] * 64, dtype=mx.bfloat16)
     positions = list(range(64))
-    draw = sample if backend == "gpu" else lambda x, s, p: Qwen35Family.sample(None, x, s, p)
+    draw = sample if backend == "gpu" else exact
     off = list(draw(logits, Sampling(seed=1, top_k=0, top_p=1.0), positions))
     minus_one = list(draw(logits, Sampling(seed=1, top_k=-1, top_p=1.0), positions))
     assert [int(t) for t in minus_one] == [int(t) for t in off]

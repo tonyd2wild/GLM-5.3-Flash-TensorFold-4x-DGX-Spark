@@ -246,7 +246,7 @@ def test_block_fp8_decode_is_exact_prompts_take_its_bits_and_fp8_prompts_track_i
 
 
 def test_block_fp8_and_bf16_concat_keeps_each_projection():
-    from tensorfold.families.qwen4_exp.cuda.bf16 import b16_from_rows, matmul
+    from tensorfold.cuda.nvfp4.bf16 import b16_from_rows, matmul
 
     w, s = _fp8b(200, 512, 3)
     a = Fp8BlockLinear.from_checkpoint(torch.from_numpy(w).cuda().view(torch.float8_e4m3fn),

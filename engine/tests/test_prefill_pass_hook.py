@@ -262,14 +262,6 @@ def _glm(checkpoint, drafts):
     return GLMFlash(model, glm_mtp.load(model) if drafts else None, drafts=drafts)
 
 
-def _flash_next():
-    from test_qwen4_exp_prefill import tiny_model
-
-    from tensorfold.families.qwen4_exp.runtime import FlashNext
-
-    return FlashNext(tiny_model(seed=4), None, drafts=0)
-
-
 def _nemotron():
     from test_nemotron_pass import _tiny
 
@@ -309,16 +301,13 @@ def _same_checkpoints(a, b):
                                           for u, v in zip(xs, ys))
 
 
-@pytest.mark.parametrize("family", ["glm", "glm-drafts", "flash-next", "nemotron"])
+@pytest.mark.parametrize("family", ["glm", "glm-drafts", "nemotron"])
 def test_passes_leave_one_chunk_a_forwards_replies_and_checkpoints(device, glm_checkpoint, monkeypatch, family):
-    if family == "flash-next":
-        pytest.skip("the tiny Flash Next prompts on Metal only and decodes on the GPU only at the checkpoint's widths "
-                    "(qmv_rows needs K % 512); tests/test_prompt_pass.py runs its pass, the served runs its engine")
     from tensorfold.kernels.qwen.flash_next.v1 import prefill_mm as PM
 
     monkeypatch.setattr(PM, "gpu_tensor_units", lambda: False)         # the passes, on an M5 too
     make = {"glm": lambda: _glm(glm_checkpoint, 0), "glm-drafts": lambda: _glm(glm_checkpoint, 2),
-            "flash-next": _flash_next, "nemotron": _nemotron}[family]
+            "nemotron": _nemotron}[family]
     runtime = make()
     vocab = 90
     prompt = [int(t) for t in np.random.default_rng(21).integers(6, vocab, size=180)]

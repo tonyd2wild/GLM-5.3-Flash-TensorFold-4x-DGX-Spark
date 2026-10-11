@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tensorfold.families.qwen3_5.dflash_head import DFlashHead, _Context
+from tensorfold.drafters.dflash_head import DFlashHead, _Context
 
 
 class DFlashChains(DFlashHead):

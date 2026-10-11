@@ -20,7 +20,7 @@ TENSOR_UNIT_TESTS = {
 
 def _tensor_units() -> bool:
     try:
-        from tensorfold.families.qwen3_5 import tensor_units
+        from tensorfold.kernels.device import tensor_units
 
         return tensor_units()
     except Exception:  # noqa: BLE001 - no MLX or no Metal: no tensor units

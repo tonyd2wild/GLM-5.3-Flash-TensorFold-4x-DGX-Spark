@@ -3,9 +3,7 @@
 import ast
 from dataclasses import dataclass
 from functools import cached_property
-import json
 from pathlib import Path
-import struct
 from types import SimpleNamespace
 
 import numpy as np
@@ -143,7 +141,7 @@ def test_parallel_split_refuses_partial_groups():
 
 
 def test_qlinear_preserves_packed_width_and_scale_precision():
-    tree = ast.parse((ROOT / "families/qwen3_5/cuda/weights.py").read_text())
+    tree = ast.parse((ROOT / "cuda/mlx4/linear.py").read_text())
     cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "QLinear")
     future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
     namespace = {"dataclass": dataclass, "cached_property": cached_property, "torch": SimpleNamespace(bfloat16="bf16")}
@@ -157,112 +155,3 @@ def test_qlinear_preserves_packed_width_and_scale_precision():
     assert not QLinear(weight, metadata, metadata, bits=4, gs=64).fast
     metadata.dtype = "bf16"
     assert QLinear(weight, metadata, metadata, bits=4, gs=64).fast
-
-
-def test_loader_resolves_each_module_and_keeps_metadata_precision():
-    tree = ast.parse((ROOT / "families/qwen3_5/cuda/weights.py").read_text())
-    cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "QLinear")
-    load = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "load")
-    linear = next(node for node in load.body if isinstance(node, ast.FunctionDef) and node.name == "qlinear")
-    future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
-    class Tensor:
-        def __init__(self, shape, dtype):
-            self.shape, self.ndim, self.dtype = shape, len(shape), dtype
-        def contiguous(self):
-            return self
-        def view(self, dtype):
-            return Tensor(self.shape, dtype)
-    raw = {"quantization": {"bits": 4, "group_size": 64, "language_model.lm_head": {"bits": 8, "group_size": 128},
-                            "model.q_proj": {"bits": 3, "group_size": 32}, "model.a_proj": False}}
-    tensors = {}
-    for path, bits, group, dtype in [("lm_head", 8, 128, "fp32"), ("model.q_proj", 3, 32, "fp16")]:
-        tensors["language_model." + path + ".weight"] = Tensor((17, 256 * bits // 32), "u32")
-        for suffix in (".scales", ".biases"):
-            tensors["language_model." + path + suffix] = Tensor((17, 256 // group), dtype)
-    tensors["language_model.model.a_proj.weight"] = Tensor((17, 256), "fp32")
-    torch = SimpleNamespace(int32="i32", uint32="u32", bfloat16="bf16", float16="fp16", float32="fp32")
-    namespace = {"dataclass": dataclass, "cached_property": cached_property, "torch": torch, "raw": raw,
-                 "prefix": "language_model.", "t": tensors, "get": lambda name: tensors.pop("language_model." + name),
-                 "tiled": False}
-    module = ast.fix_missing_locations(ast.Module(body=[future, cls, linear], type_ignores=[]))
-    exec(compile(module, "affine_loader_contract", "exec"), namespace)
-    head, query, dense = (namespace["qlinear"](path) for path in ("lm_head", "model.q_proj", "model.a_proj"))
-    assert (head.bits, head.gs, head.scales.dtype, head.k) == (8, 128, "fp32", 256)
-    assert (query.bits, query.gs, query.scales.dtype, query.k) == (3, 32, "fp16", 256)
-    assert (dense.layout, dense.k, dense.weight.dtype) == ("dense", 256, "fp32")
-    assert not tensors
-
-
-def test_generic_memory_counts_eight_bit_words_without_four_bit_padding(tmp_path):
-    from tensorfold.families.qwen3_5.cuda.affine_memory import weight_transform
-
-    config = {"quantization": {"bits": 8, "group_size": 32}}
-    (tmp_path / "config.json").write_text(json.dumps(config))
-    prefix = "language_model.model.layers.0.self_attn.q_proj"
-    entries, offset = {}, 0
-    for suffix, dtype, shape, item in [("weight", "U32", [35, 64], 4),
-                                      ("scales", "BF16", [35, 8], 2), ("biases", "BF16", [35, 8], 2)]:
-        size = int(np.prod(shape)) * item
-        entries[prefix + "." + suffix] = {"dtype": dtype, "shape": shape, "data_offsets": [offset, offset + size]}
-        offset += size
-    raw = json.dumps(entries).encode()
-    (tmp_path / "model.safetensors").write_bytes(struct.pack("<Q", len(raw)) + raw)
-    transform = weight_transform(tmp_path)
-    assert transform(prefix + ".weight", entries[prefix + ".weight"]) == (35 * 64 * 4, 0)
-
-
-def test_mixed_prefill_tiles_raw_fast_weights_and_preserves_fp8_dispatch():
-    tree = ast.parse((ROOT / "families/qwen3_5/cuda/prefill.py").read_text())
-    function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_mm")
-    future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
-    seen = []
-    def tile(weight):
-        if weight.fast and weight.layout == "mlx":
-            return SimpleNamespace(fast=True, layout="tiled", bits=weight.bits, n=256)
-        return weight
-    def project(x, weight, *, f32=False):
-        if weight.fast:
-            assert weight.layout == "tiled"
-        seen.append((x, weight, f32))
-        return "projection"
-    class QLinear(SimpleNamespace):
-        pass
-    namespace = {"tile": tile, "matmul": project, "matmul_partial": lambda x, w: project(x, w, f32=True),
-                 "shared": SimpleNamespace(prefill_matmul8=lambda x, w, **kw: (project(x, w, **kw), "fp8"),
-                                           prefill_matmul=lambda x, w, f32=False, tile=None: project(x, w, f32=f32),
-                                           prompt_tile=lambda rows, n: 9),     # bf16 rows on the prompt matmul
-                 "QLinear": QLinear}
-    module = ast.fix_missing_locations(ast.Module(body=[future, function], type_ignores=[]))
-    exec(compile(module, "mixed_prefill_dispatch", "exec"), namespace)
-    rows = SimpleNamespace(shape=(4096, 256))
-    four = QLinear(fast=True, layout="mlx", bits=4)
-    other = QLinear(fast=False, layout="mlx", bits=8)
-    exl3 = SimpleNamespace(prefill=lambda x: ("exl3", x))           # an EXL3 pack's projection takes bf16 rows
-    assert namespace["_mm"](rows, exl3) == ("exl3", rows)
-    assert namespace["_mm"](rows, four) == "projection"
-    assert seen[-1][0].shape[0] == 4096 and seen[-1][1].layout == "tiled"
-    assert namespace["_mm"](rows, four, f32=True) == "projection" and seen[-1][2]
-    namespace["_mm"](rows, other)
-    assert seen[-1][1] is other
-    assert namespace["_mm"](("bytes", "sums", "scales"), four) == ("projection", "fp8")
-
-
-def test_local_input_splits_group32_inputs_that_are_only64_columns_wide():
-    tree = ast.parse((ROOT / "families/qwen3_5/cuda/distributed.py").read_text())
-    functions = [node for node in tree.body if isinstance(node, ast.FunctionDef)
-                 and node.name in ("_rank", "local_input")]
-    future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
-    namespace = {}
-    module = ast.fix_missing_locations(ast.Module(body=[future, *functions], type_ignores=[]))
-    exec(compile(module, "affine_activation_split", "exec"), namespace)
-    class Matrix(np.ndarray):
-        def contiguous(self):
-            return self.copy()
-    x = np.arange(4 * 64).reshape(4, 64).view(Matrix)
-    for rank in (0, 1):
-        np.testing.assert_array_equal(namespace["local_input"](x, rank, group_size=32),
-                                      x[:, rank * 32:(rank + 1) * 32])
-    with pytest.raises(ValueError):
-        namespace["local_input"](x, 0)
-    with pytest.raises(ValueError):
-        namespace["local_input"](x, 0, group_size=128)

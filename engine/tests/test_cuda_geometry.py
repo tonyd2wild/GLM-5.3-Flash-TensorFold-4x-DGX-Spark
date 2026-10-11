@@ -71,48 +71,6 @@ def bytes_in(arrays):
     return sum(t.numel() * t.element_size() for t in arrays)
 
 
-@pytest.mark.torch
-@pytest.mark.parametrize("world", [1, 2])
-@pytest.mark.parametrize("mtp", [False, True])
-@pytest.mark.parametrize("prefill_rows", [2048, 4096])
-@pytest.mark.parametrize("kv_dtype,bits", [("bf16", 16), ("int8", 8), ("int4", 4)])
-def test_indexed_state_actual_kv_and_serial_twin_are_budgeted(monkeypatch, allocations, world, mtp, kv_dtype, bits,
-                                                            prefill_rows):
-    arrays, fake = allocations
-    mod = importlib.import_module("tensorfold.families.qwen4_exp.cuda.state")
-    gdn = importlib.import_module("tensorfold.families.qwen4_exp.cuda.gdn")
-    monkeypatch.setattr(mod, "torch", fake)
-    monkeypatch.setattr(gdn, "torch", fake)
-    monkeypatch.setattr(mod.kvcache, "torch", fake)
-    text = {"hidden_size": 512, "num_attention_heads": 8, "num_key_value_heads": 2, "head_dim": 64,
-            "num_hidden_layers": 4, "layer_types": ["linear_attention", "full_attention"] * 2,
-            "linear_num_key_heads": 2, "linear_num_value_heads": 4, "linear_key_head_dim": 128,
-            "linear_value_head_dim": 128, "linear_conv_kernel_dim": 4, "vocab_size": 1024, "hc_count": 4}
-    cfg = SimpleNamespace(hidden=512, streams=4, conv_kernel=4, conv_dim=1024 // world,
-                          nk=2 // world, nv=4 // world, dk=128, dv=128, kv_heads=2 // world,
-                          head_dim=64, index_dim=128, index_ratio=4, ple_kernel=4,
-                          ngram_size=3, ple_layers=[], heads=8 // world, index_heads=4,
-                          index_budget=2048, low=320, experts=8, top_k=2, moe_width=512 // world,
-                          shared_width=512 // world, heads_per_ngram=8, ple_dim=512)
-    weights = SimpleNamespace(cfg=cfg, device="cpu", layers=[SimpleNamespace(index=i, linear=i % 2 == 0) for i in range(4)],
-                              mtp=SimpleNamespace() if mtp else None, meta={"world": world}, head=SimpleNamespace(n=1024 // world))
-    slots = 65536
-    for child in (mod.attn_mod, mod.moe_mod):
-        monkeypatch.setattr(child, "torch", fake)
-    mod.Buffers(weights, 64, slots)
-    if mtp:
-        mod.Buffers(weights, 64, slots)
-    mod.Buffers(weights, prefill_rows, slots, prefill=True)
-    mod.State(weights, slots, 64, kv_dtype)
-    mod.State(weights, slots, 64, kv_dtype)  # the actual serial-reference twin constructor
-    estimated = geometry.gdn_geometry(text, world, 7, indexed=True, mtp=mtp, kv_bits=bits,
-                                      prefill_rows=prefill_rows).bytes_at(slots)
-    kv = [t for t in arrays if len(t.shape) == 3 and t.shape[:2] == (slots, cfg.kv_heads)]
-    caches = 2 * (2 + int(mtp))                                          # two states: two attention layers, the MTP's
-    assert bytes_in(kv) == caches * 2 * slots * cfg.kv_heads * geometry.kv_bytes(cfg.head_dim, bits)
-    assert bytes_in(arrays) <= estimated
-
-
 def test_mla_latent_estimate_grows_by_the_cache_and_counts_one_prompt_chunk_scratch():
     """Per token, the latent estimate grows by the latent and indexer caches of every attention layer (the MTP's
     too) plus one fp32 pool score for each prompt-chunk row; the MTP head adds its caches and decode buffers, never a
@@ -192,34 +150,3 @@ def test_unified_available_memory_uses_reclaimable_host_pages(monkeypatch):
     monkeypatch.setattr(capacity, "unified", lambda torch: True)
     # the grant is the reclaimable pool less the floor the host keeps free: a tenth of its 128 GiB of RAM
     assert capacity.available_bytes(fake) == 60 * capacity.GIB - 128 * capacity.GIB // 10
-
-
-@pytest.mark.torch
-@pytest.mark.parametrize("world", [1, 2])
-@pytest.mark.parametrize("mtp", [False, True])
-def test_flash_message_snapshot_budget_counts_actual_saved_tensors(world, mtp):
-    import torch
-    from tensorfold.families.qwen4_exp.cuda.state import State
-
-    text = {"hidden_size": 512, "num_attention_heads": 8, "num_key_value_heads": 2, "head_dim": 64,
-            "layer_types": ["linear_attention", "full_attention"] * 2,
-            "linear_num_key_heads": 2, "linear_num_value_heads": 4, "linear_key_head_dim": 128,
-            "linear_value_head_dim": 128, "linear_conv_kernel_dim": 4, "vocab_size": 1024, "hc_count": 4}
-    cfg = SimpleNamespace(hidden=512, streams=4, conv_kernel=4, conv_dim=1024 // world,
-                          nk=2 // world, nv=4 // world, dk=128, dv=128, kv_heads=2 // world,
-                          head_dim=64, index_dim=128, index_ratio=4, ple_kernel=4, ngram_size=3, ple_layers=[])
-    weights = SimpleNamespace(cfg=cfg, device="cpu", layers=[SimpleNamespace(index=i, linear=i % 2 == 0)
-                                                           for i in range(4)], mtp=object() if mtp else None)
-    state = State(weights, 32, 8)
-    snapshot = state.snapshot()
-    tensors = [value for value in snapshot.values() if isinstance(value, torch.Tensor)]
-    if mtp:
-        tensors.append(torch.zeros((1, cfg.hidden * cfg.streams), dtype=torch.bfloat16))
-    saved = sum(t.numel() * t.element_size() for t in tensors)
-    low = geometry.gdn_geometry(text, world, 8, indexed=True, mtp=mtp, kept=2).bytes_at(32)
-    high = geometry.gdn_geometry(text, world, 8, indexed=True, mtp=mtp, kept=5).bytes_at(32)
-    assert high - low == 3 * saved
-    if world == 1:
-        low = geometry.indexed_stream_geometry(text, 2, 4, 2, mtp=mtp).bytes_at(32)
-        high = geometry.indexed_stream_geometry(text, 2, 4, 8, mtp=mtp).bytes_at(32)
-        assert high - low == 6 * saved

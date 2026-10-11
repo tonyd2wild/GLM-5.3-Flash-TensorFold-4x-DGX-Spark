@@ -7,15 +7,14 @@ import pytest
 
 mx = pytest.importorskip("mlx.core")
 
-from tensorfold.families import qwen3_5  # noqa: E402
 from tensorfold.kernels import device, threads  # noqa: E402
 from tensorfold.kernels.gemma.v1 import matmul as gemma  # noqa: E402
 from tensorfold.kernels.nemotron.lightning.v1 import kernels as nemotron  # noqa: E402
-from tensorfold.kernels.qwen.flash_next.v1 import base, prefill_mm  # noqa: E402
+from tensorfold.kernels.qwen.flash_next.v1 import prefill_mm  # noqa: E402
 
 
 def _clear():
-    for cached in (device.generation, base._generation):
+    for cached in (device.generation,):
         clear = getattr(cached, "cache_clear", None)
         if clear is not None:
             clear()
@@ -42,9 +41,8 @@ def gpu(monkeypatch):
 
 
 def _readings():
-    return {"qwen3_5": qwen3_5.tensor_units(), "gemma": gemma.tensor_units(), "nemotron": nemotron.tensor_units(),
-            "prefill_mm": prefill_mm._tensor_units(), "prefill_mm.gpu": prefill_mm.gpu_tensor_units(),
-            "flash_next nib_rows": base.nib_rows() == 0}
+    return {"gemma": gemma.tensor_units(), "nemotron": nemotron.tensor_units(),
+            "prefill_mm": prefill_mm._tensor_units(), "prefill_mm.gpu": prefill_mm.gpu_tensor_units()}
 
 
 @pytest.mark.parametrize("architecture, generation", [

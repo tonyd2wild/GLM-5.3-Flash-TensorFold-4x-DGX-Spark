@@ -45,7 +45,7 @@ def test_keeping_the_newest_counts_one_model_only(tmp_path):
 def test_a_drafter_slot_is_left_out_of_a_saved_snapshot(tmp_path):
     from mlx_lm.models.cache import KVCache
 
-    from tensorfold.families.qwen3_5.dflash_head import DraftSlot
+    from tensorfold.drafters.dflash_head import DraftSlot
 
     kv = KVCache()
     kv.update_and_fetch(mx.ones((1, 2, 4, 4)), mx.ones((1, 2, 4, 4)))

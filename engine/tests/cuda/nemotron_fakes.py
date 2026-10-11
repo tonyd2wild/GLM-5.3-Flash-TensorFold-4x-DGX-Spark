@@ -6,8 +6,7 @@ import torch
 
 from tensorfold.cuda import experts as grouped
 from tensorfold.families.nemotron_h.cuda.weights import MTP, Attention, Block, Config, Mamba, MoE, Weights
-from tensorfold.families.qwen3_5.cuda.qmm_fast import tile
-from tensorfold.families.qwen3_5.cuda.weights import QLinear
+from tensorfold.cuda.mlx4.linear import QLinear, tile
 
 
 def tiny_config(pattern: str = "ME*EME", heads: int = 16, kv_heads: int = 1) -> Config:

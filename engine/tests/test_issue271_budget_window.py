@@ -15,7 +15,7 @@ RESIDENT = int(77.2 * GIB)     # the report's weights kept resident, at both bud
 CACHE_BPT = 48 * 1024          # prompt-cache bytes per token (6.0 GiB a copy at 128K)
 # a full chunk's workspace: 2,048 and 8,192 as the report measured them, 4,096 between (never measured)
 WORK = {2048: int(2.6 * GIB), 4096: 9 * GIB, 8192: int(25.9 * GIB)}
-STEPS = (8192, 4096, 2048)     # the chunk sizes qwen4_exp's engine_settings() offers with tensor units
+STEPS = (8192, 4096, 2048)     # the chunk sizes a family's engine_settings() offers with tensor units (Nemotron's)
 PROBE = list(range(4096))      # stand-in token ids for the probe prompt (the server probes on source text)
 BUDGETS = [80.0 + 2.5 * k for k in range(13)]  # GiB, 80 to 110
 

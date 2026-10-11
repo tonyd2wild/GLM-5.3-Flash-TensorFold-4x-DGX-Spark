@@ -135,7 +135,7 @@ def fake_runtime(monkeypatch):
         recv.view(-1).copy_(torch.cat([send.view(-1), send.view(-1)]))
     comm = SimpleNamespace(barrier=lambda: None, ready=lambda *a, **k: None, all_gather=both)
     monkeypatch.setitem(sys.modules, "tensorfold.cuda.comm", SimpleNamespace(open_comm=lambda *a, **k: comm))
-    for family in ("qwen3_5", "qwen4_exp", "glm5_next"):
+    for family in ("glm5_next",):
         prefix = f"tensorfold.families.{family}.cuda"
         weights = SimpleNamespace(load=load, draft_token_ids=lambda *a: None,
                                   Config=SimpleNamespace(read=lambda *a: SimpleNamespace(dense_limit=2051)))
@@ -144,29 +144,18 @@ def fake_runtime(monkeypatch):
     import torch.distributed as dist
     monkeypatch.setattr(dist, "init_process_group", lambda *a, **kw: None)
     monkeypatch.setattr(dist, "all_gather_into_tensor", lambda recv, send: both(send, recv))
-    monkeypatch.setitem(sys.modules, "tensorfold.families.qwen3_5.cuda.distributed", SimpleNamespace(split_weights=None))
-    from tensorfold.families.qwen4_exp.cuda import engine as flash_engine
-    monkeypatch.setattr(flash_engine, "build_kernels", lambda **kw: None)     # no CUDA extension builds here
     return calls, capacity
 
 
 def construct(family, path, requested, explicit, world, rank=0):
-    if family == "linear":
-        from tensorfold.families.qwen3_5.cuda.engine import Qwen27Engine
-        obj = Qwen27Engine.__new__(Qwen27Engine)
-        start = lambda: obj.__init__(path, None, tp=world, rank=rank, master="example", context=requested, context_explicit=explicit)
-    elif family == "indexed":
-        from tensorfold.families.qwen4_exp.cuda.engine import FlashNextEngine
-        obj = FlashNextEngine.__new__(FlashNextEngine)
-        start = lambda: obj.__init__(path, tp=world, rank=rank, master="example", max_len=requested, context_explicit=explicit, depth=0)
-    else:
-        from tensorfold.families.glm5_next.cuda.engine import GlmEngine
-        obj = GlmEngine.__new__(GlmEngine)
-        start = lambda: obj.__init__(path, rank=rank, master="example", port=29551, context=requested, context_explicit=explicit)
+    assert family == "mla", family                       # GLM's engine, the CUDA family this tree serves
+    from tensorfold.families.glm5_next.cuda.engine import GlmEngine
+    obj = GlmEngine.__new__(GlmEngine)
+    start = lambda: obj.__init__(path, rank=rank, master="example", port=29551, context=requested, context_explicit=explicit)
     return obj, start
 
 
-@pytest.mark.parametrize("family,world", [("linear", 1), ("linear", 2), ("indexed", 1), ("indexed", 2), ("mla", 2)])
+@pytest.mark.parametrize("family,world", [("mla", 2)])
 @pytest.mark.parametrize("requested,explicit,window", [(None, None, 65536), (65536, False, 65536),
                                                         (0, True, 65536), (1024, True, 1024)])
 @pytest.mark.torch
@@ -186,7 +175,7 @@ def test_real_constructors_choose_native_or_explicit_before_loading(tmp_path, fa
 
 
 @pytest.mark.torch
-@pytest.mark.parametrize("family,world", [("linear", 1), ("linear", 2), ("indexed", 1), ("indexed", 2), ("mla", 2)])
+@pytest.mark.parametrize("family,world", [("mla", 2)])
 def test_real_constructors_shrink_default_and_refuse_explicit_before_loading(tmp_path, monkeypatch, fake_runtime,
                                                                          family, world):
     checkpoint(tmp_path, small_config(), HEAD)
@@ -281,7 +270,7 @@ def test_loading_peak_is_separate_from_serving_peak():
 
 
 @pytest.mark.torch
-@pytest.mark.parametrize("family", ["linear", "indexed", "mla"])
+@pytest.mark.parametrize("family", ["mla"])
 @pytest.mark.parametrize("explicit", [False, True])
 def test_actual_distributed_startup_agrees_on_smaller_rank_before_loading(tmp_path, monkeypatch, fake_runtime,
                                                                         family, explicit):
@@ -368,18 +357,3 @@ def test_an_unsizable_dtype_names_its_tensor_in_the_operators_message(tmp_path, 
     geometry = capacity.Geometry(lambda slots: slots * 1024, 8)
     with pytest.raises(ValueError, match=r"F8_E9M9.*model\.layers\.0\.w|model\.layers\.0\.w.*F8_E9M9"):
         capacity.admit(tmp_path, None, None, object(), geometry, lambda name, info: (1, 0))
-
-
-def test_a_4bit_drafter_is_admitted_at_its_packed_bytes(tmp_path):
-    from tensorfold.cuda.capacity import estimate_weights
-    from tensorfold.families.qwen3_5.cuda.affine_memory import draft_bytes, packed_draft
-
-    checkpoint(tmp_path, {}, [("layers.0.mlp.gate_proj.weight", "BF16", [5120, 5120], 2 * 5120 * 5120),
-                              ("layers.0.self_attn.k_proj.weight", "BF16", [1024, 5120], 2 * 1024 * 5120),
-                              ("layers.0.input_layernorm.weight", "BF16", [5120], 2 * 5120),
-                              ("layers.0.narrow.weight", "BF16", [5120, 64], 2 * 5120 * 64)])
-    q4 = lambda n: n // 2 + n // 64 * 4
-    assert estimate_weights(tmp_path, draft_bytes).resident == (q4(5120 * 5120) + 2 * q4(1024 * 5120) + 2 * 5120
-                                                                + 2 * 5120 * 64)
-    assert packed_draft("a.weight", [5120, 5120]) and not packed_draft("a.weight", [5120, 64])
-    assert not packed_draft("a.bias", [5120, 5120]) and not packed_draft("a.weight", [5120])

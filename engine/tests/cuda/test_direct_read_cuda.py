@@ -1,5 +1,5 @@
-"""Loading on the GPU: direct reads return safetensors' tensors, Flash Next's reader returns its buffered bytes, and the
-fused expert packing gives the bits of the former torch one."""
+"""Loading on the GPU: direct reads return safetensors' tensors, and the fused expert packing gives the bits of the
+former torch one."""
 
 import json
 import struct
@@ -11,7 +11,6 @@ from safetensors.torch import save_file
 
 from tensorfold.cuda import direct_read
 from tensorfold.cuda import experts as grouped
-from tensorfold.families.qwen4_exp.cuda import weights
 
 DEV = "cuda"
 
@@ -108,35 +107,6 @@ def _write_checkpoint(path, tensors):
     (path / shard).write_bytes(struct.pack("<Q", len(text)) + text + b"".join(blobs))
     (path / "model.safetensors.index.json").write_text(json.dumps({"weight_map": {k: shard for k in tensors}}))
 
-
-def test_flash_next_reader_returns_the_buffered_bytes(tmp_path, monkeypatch):
-    monkeypatch.setattr(direct_read, "PIECE", 3 * 4096)
-    tensors = _tensors()
-    _write_checkpoint(tmp_path, tensors)
-    direct = weights._Reader(tmp_path, DEV)
-    buffered = weights._Reader(tmp_path, DEV)
-    buffered.io.direct = False
-    for name, t in tensors.items():
-        a, b = direct.get(name), buffered.get(name)
-        assert a.dtype == t.dtype and a.shape == t.shape and torch.equal(a, b) and torch.equal(a.cpu(), t), name
-    if not direct.io.direct:
-        pytest.skip("this file system refuses O_DIRECT: only the fallback was checked")
-
-
-
-def test_flash_next_reader_read_ahead_matches_direct_reads(tmp_path):
-    tensors = _tensors()
-    _write_checkpoint(tmp_path, tensors)
-    ahead, alone = weights._Reader(tmp_path, DEV), weights._Reader(tmp_path, DEV)
-    ahead.queue(list(tensors)[:2])
-    ahead.queue(list(tensors))                                          # overlapping queues: each tensor read once
-    ahead.drop(["e.last"])                                              # dropped: read directly when asked for
-    taken = {name: ahead.get(name).clone() for name in tensors}         # no synchronization until the end
-    torch.cuda.synchronize()
-    for name, t in tensors.items():
-        a, b = taken[name], alone.get(name)
-        assert a.dtype == t.dtype and a.shape == t.shape and torch.equal(a, b) and torch.equal(a.cpu(), t), name
-    ahead.close()
 
 def test_table_reads_are_waited_for_and_raise_their_errors():
     import threading

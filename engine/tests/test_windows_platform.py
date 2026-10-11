@@ -113,32 +113,3 @@ def test_an_sm75_card_is_refused_by_name_at_startup():
     with mock.patch.dict(sys.modules, {"torch": gpu}):
         with pytest.raises(ValueError, match="2080 Ti"):
             build.refuse_old_gpu(build.MIN_CAPABILITY)
-
-
-def test_windows_pins_table_pages_and_gives_them_up_when_refused():
-    numpy = pytest.importorskip("numpy")
-    from tensorfold.families.qwen4_exp import host_table
-
-    class Kernel32:
-        def __init__(self, answers):
-            self.answers, self.locked = list(answers), []
-
-        def VirtualLock(self, address, size):
-            answer = self.answers.pop(0)
-            if answer:
-                self.locked.append(address.value)
-            return answer
-
-        def VirtualUnlock(self, address, size):
-            self.locked.remove(address.value)   # on Windows an unmade pin means nothing stayed pinned either
-
-    tables = [numpy.zeros(4096, numpy.uint8), numpy.zeros(8192, numpy.uint8)]
-    pinned = [array.ctypes.data for array in tables]
-
-    keep_all = Kernel32([True, True])
-    assert host_table.windows_lock_pages(tables, keep_all)
-    assert keep_all.locked == pinned            # the same addresses, in the order the tables were built
-
-    keep_some = Kernel32([True, False])
-    assert not host_table.windows_lock_pages(tables, keep_some)
-    assert keep_some.locked == []               # what was pinned came back out with the refused read

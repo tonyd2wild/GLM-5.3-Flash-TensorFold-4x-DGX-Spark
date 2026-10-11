@@ -82,16 +82,3 @@ def test_an_app_without_an_engine_still_reports_idle():
     body = health.of(bare).snapshot(bare)
     assert body["ok"] is True and body["busy"] is False
     assert "streams" not in body and "context_length" not in body
-
-
-def test_a_stream_counts_drafted_rows_and_the_drafts_it_kept():
-    from tensorfold.cuda.streams import Stream
-
-    stream = Stream([3, 4], 10, None)
-    stream.take([5])                    # the prompt's first token
-    stream.counted(3)
-    stream.take([6, 7])                 # a three-row window: two drafted rows, one of them kept
-    stream.counted(1)
-    stream.take([8])                    # a round of one row
-    stats = stream.stats()
-    assert (stats["rounds"], stats["drafted"], stats["accepted"]) == (2, 2, 1)

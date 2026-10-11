@@ -270,20 +270,3 @@ def test_stack_keeps_explicit_bits_and_detects_changed_member_format(backend):
 def test_direct_stack_construction_rejects_mixed_formats(backend):
     with pytest.raises(ValueError, match="share their bit width"):
         backend.api["Stack"]([Linear(bits=4), Linear(k=64, bits=8)])
-
-
-def test_mixed_gdn_projections_are_forwarded_in_convolution_layout(mx, monkeypatch):
-    stub = ModuleType("tensorfold.kernels.qwen.dense.v1.row_streams")
-    monkeypatch.setitem(sys.modules, stub.__name__, stub)
-    names = ("in_proj_qkv", "in_proj_z", "in_proj_b", "in_proj_a")
-    modules = [Linear(n=width, bits=bits) for width, bits in zip((16, 8, 2, 2), (2, 3, 5, 8))]
-    calls = []
-    namespace = {"mx": mx, "row_matmul": NS(GROUPS={"in": names}), "stack_of": lambda *args: None,
-                 "project": lambda module, x: calls.append(module.bits) or Array((1, 2, module.weight.shape[0])),
-                 "_recur": lambda gdn, y, *args: y,
-                 "gdn_post": lambda rec, y, *args, **kwargs: rec}
-    load_definitions("row_forward.py", namespace, {"_gdn"})
-    gdn = NS(**dict(zip(names, modules)), conv_kernel_size=4, conv_dim=16, norm=NS(weight=None, eps=1e-6))
-    rows = NS(single=True, windows=[None], parents=[(-1, 0)], chains=[True], records=[[]])
-    out = namespace["_gdn"](gdn, Array((1, 2, 128)), [None], rows)
-    assert calls == [2, 3, 5, 8] and out.shape == (1, 2, 28)

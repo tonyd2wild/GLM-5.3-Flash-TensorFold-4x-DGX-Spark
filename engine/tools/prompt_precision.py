@@ -220,20 +220,6 @@ def fp32_weight(weight, scales, biases, group: int, bits: int):
                          group_size=group, bits=bits).astype(mx.float32)
 
 
-def install_fp32_flash() -> None:
-    import mlx.core as mx
-    from mlx.nn.layers.quantized import QuantizedLinear
-
-    def call(self, x):
-        weight = fp32_weight(self.weight, self.scales, self.biases, int(self.group_size), int(self.bits))
-        y = mx.matmul(x.astype(mx.float32), weight.T)
-        if "bias" in self:
-            y = y + self["bias"].astype(mx.float32)
-        return y
-
-    QuantizedLinear.__call__ = call
-
-
 def install_fp32_glm() -> None:
     import mlx.core as mx
 
@@ -253,11 +239,7 @@ def install_fp32_glm() -> None:
         module.project = project
 
 
-def load_family(family: str, model_dir: Path, ple_on_ssd: bool, ssd_experts: float | None):
-    if family == "flash":
-        from tensorfold.families.qwen4_exp.runtime import load
-
-        return load(model_dir, drafts=0, ple_on_ssd=ple_on_ssd, ssd_experts=ssd_experts)
+def load_family(family: str, model_dir: Path, ssd_experts: float | None):
     from tensorfold.families.glm5_next.runtime import load
 
     return load(model_dir, drafts=0, ssd_experts=ssd_experts)
@@ -265,21 +247,6 @@ def load_family(family: str, model_dir: Path, ple_on_ssd: bool, ssd_experts: flo
 
 def bind(family: str, model):
     """Path step, reference step, and the call that installs the fp32 linears."""
-
-    if family == "flash":
-        inner = model.model
-
-        def path(chunk, cache):
-            return model.head(model.hidden(chunk, cache))
-
-        def reference(chunk, cache):
-            return inner(chunk.reshape(1, -1), cache)
-
-        def arm() -> None:
-            inner.__dict__.pop("fused", None)
-            install_fp32_flash()
-
-        return path, reference, arm
 
     def path(chunk, cache):
         return model.head(model.hidden(chunk, cache))
@@ -322,8 +289,8 @@ def run(args: argparse.Namespace) -> int:
     import os
 
     if args.dense:
-        os.environ["TF_FLASH_DENSE" if args.family == "flash" else "TF_GLM_DENSE"] = args.dense
-    model, tokenizer = load_family(args.family, args.model, args.ple_on_ssd, args.ssd_experts)
+        os.environ["TF_GLM_DENSE"] = args.dense
+    model, tokenizer = load_family(args.family, args.model, args.ssd_experts)
     wiki, code, chat = counts(args.sequences)
     rows = sequences(tokenizer, args.wikitext, args.length, wiki, code, chat)
     width = args.width or int(model.fused_rows)
@@ -353,13 +320,12 @@ def run(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Score a decode forward against an fp32 dequantized matmul.")
     parser.add_argument("--self-test", action="store_true")
-    parser.add_argument("--family", choices=("flash", "glm"), default="flash")
+    parser.add_argument("--family", choices=("glm",), default="glm")
     parser.add_argument("--model", type=Path)
     parser.add_argument("--wikitext", type=Path, default=Path.home() / "tf-data" / "wikitext-2-raw" / "wiki.test.raw")
     parser.add_argument("--length", type=int, default=LENGTH)
     parser.add_argument("--sequences", type=int, default=8)
     parser.add_argument("--width", type=int, default=0)
-    parser.add_argument("--ple-on-ssd", action="store_true")
     parser.add_argument("--ssd-experts", type=float, default=None)
     parser.add_argument("--dense", choices=("rows", "matrix"))
     args = parser.parse_args(argv)

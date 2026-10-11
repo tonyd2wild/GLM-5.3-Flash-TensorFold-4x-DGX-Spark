@@ -373,10 +373,10 @@ def test_weights_past_the_budget_are_refused_before_loading(monkeypatch, tmp_pat
 
 
 
-def test_the_27b_draft_slot_counts_its_drafter_context_as_fixed_memory_and_a_copy_as_none():
+def test_a_dflash_draft_slot_counts_its_drafter_context_as_fixed_memory_and_a_copy_as_none():
     import copy
 
-    from tensorfold.families.qwen3_5.dflash_head import DraftSlot
+    from tensorfold.drafters.dflash_head import DraftSlot
 
     keys = Array((1, 4, 512, 256))
     kv = SimpleNamespace(keys=keys, values=Array(keys.shape), state=(keys, keys), offset=512)

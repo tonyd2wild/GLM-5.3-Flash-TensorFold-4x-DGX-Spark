@@ -6,7 +6,7 @@ import torch
 
 from tensorfold.cuda import experts as grouped
 from tensorfold.cuda.kernels import prefill_attention
-from tensorfold.families.qwen3_5.cuda import glue as base
+from tensorfold.cuda.mlx4 import glue as base
 
 from . import attention as A, glue as G, mamba as M, sampler as S
 from .weights import Attention, MoE, Weights

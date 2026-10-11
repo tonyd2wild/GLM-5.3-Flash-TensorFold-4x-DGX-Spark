@@ -9,9 +9,8 @@ import triton
 import triton.language as tl
 
 from tensorfold.cuda import experts as grouped
-from tensorfold.families.qwen3_5.cuda import glue as base
-from tensorfold.families.qwen3_5.cuda.qmm_fast import tile, untile
-from tensorfold.families.qwen3_5.cuda.weights import QLinear
+from tensorfold.cuda.mlx4 import glue as base
+from tensorfold.cuda.mlx4.linear import QLinear, tile, untile
 
 from . import attention as A, glue as G, mamba as M, sampler as S
 from .engine import Engine

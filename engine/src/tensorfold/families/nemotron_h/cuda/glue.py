@@ -7,13 +7,13 @@ import triton
 import triton.language as tl
 
 from tensorfold.cuda.kernels import qmm as shared
-from tensorfold.families.qwen3_5.cuda import qmm_fast
+from tensorfold.cuda.mlx4 import linear as mlx4
 
 
 def dense(x: torch.Tensor, q, xs: torch.Tensor | None = None, *, f32: bool = False) -> torch.Tensor:
     """The shared 4-bit lane matmul (tiled weights): bf16 out, or unrounded fp32 sums (a rank's partial)."""
 
-    return qmm_fast.matmul_partial(x, q, xs) if f32 else qmm_fast.matmul(x, q, xs)
+    return mlx4.matmul_partial(x, q, xs) if f32 else mlx4.matmul(x, q, xs)
 
 
 def prefill_dense(x: torch.Tensor, q, *, f32: bool = False) -> torch.Tensor:

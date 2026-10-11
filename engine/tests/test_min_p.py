@@ -114,16 +114,6 @@ def test_the_mac_app_resolves_min_p_into_the_draw():
     assert options._resolve_sampling({"seed": 4, "min_p": 0.3}, 0.7, [1, 2]).min_p == 0.3
 
 
-def test_two_ranks_read_the_sampling_rank_zero_sent():
-    pytest.importorskip("triton")                            # the 27B's CUDA modules
-    from tensorfold.families.qwen3_5.cuda.decode_tp import SAMPLING_WORDS, pack_sampling, unpack_sampling
-
-    for s in (Sampling(2**63 - 5, 0.7, 20, 0.95, 0.05), Sampling(7, 1.0, 0, 1.0), None):
-        words = pack_sampling(s)
-        assert len(words) == SAMPLING_WORDS and all(0 <= w < 1 << 16 for w in words)
-        assert unpack_sampling(words) == s
-
-
 # -- MLX: the nucleus path and the Metal kernel ---------------------------------------------------------------------
 def test_the_mlx_nucleus_path_cuts_what_the_full_rule_cuts():
     """top_k 0: the fast nucleus (GPU candidates + normalizer) draws what sorting every logit draws, with min_p."""

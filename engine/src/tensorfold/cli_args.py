@@ -35,13 +35,9 @@ def build_parser(handlers: dict[str, Callable[[argparse.Namespace], int]]) -> ar
     endpoint.add_argument("--api-key-file", help="restricted key file, one key or label: key per line; # comments")
     endpoint.add_argument("--metrics-open", action="store_true", help="allow metrics without an API key")
     endpoint.add_argument("--vision", action="store_true",
-                          help="enable image input for supported GLM and Qwen vision checkpoints")
+                          help="enable image input for GLM-5.3-Flash checkpoints with their vision tower")
     endpoint.add_argument("--vision-urls", action="store_true",
                           help="with --vision, accept public HTTP(S) image URLs (default: data URLs only)")
-    endpoint.add_argument("--vision-offload", action="store_true",
-                          help="with --vision on CUDA, keep the image tower in host RAM and copy it to the GPU only "
-                               "while an image is encoded (frees about 5 GiB of the startup budget on a small card; "
-                               "each image pays the copy)")
     endpoint.add_argument("--vision-max-images", type=int, default=None,
                           help="with --vision, maximum images across the full request history (default: 4); "
                                "byte, pixel and visual-token limits still apply")

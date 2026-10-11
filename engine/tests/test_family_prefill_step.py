@@ -150,10 +150,14 @@ def test_a_probe_whose_peak_varies_run_to_run_gives_the_same_step(monkeypatch, n
 
 
 def test_nemotron_offers_8192_token_prompt_chunks_with_tensor_units(monkeypatch):
-    from tensorfold.families import nemotron_h, qwen3_5
+    import sys
+
+    from tensorfold.families import nemotron_h
 
     model = SimpleNamespace(exact_width=5)
     for units, steps in ((True, (8192, 4096, 2048)), (False, None)):
-        monkeypatch.setattr(qwen3_5, "tensor_units", lambda units=units: units)
+        # the Metal device query, without MLX (engine_settings imports it when called)
+        device = SimpleNamespace(tensor_units=lambda units=units: units)
+        monkeypatch.setitem(sys.modules, "tensorfold.kernels.device", device)
         settings = nemotron_h.engine_settings(model)
         assert settings.get("prefill_steps") == steps and settings["max_rows"] == 5 and settings["max_draft"] == 4

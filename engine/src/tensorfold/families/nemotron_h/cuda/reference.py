@@ -5,8 +5,8 @@ from __future__ import annotations
 import torch
 
 from tensorfold.cuda import experts as grouped
-from tensorfold.families.qwen3_5.cuda.qmm import dequantize
-from tensorfold.families.qwen3_5.cuda.qmm_fast import untile
+from tensorfold.cuda.mlx4.linear import untile
+from tensorfold.cuda.mlx4.qmm import dequantize
 
 from .weights import MoE, Weights
 

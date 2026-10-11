@@ -1,6 +1,6 @@
-"""ignore_eos on Flash Next's and Nemotron's CUDA engines, as on the 27B (test_cuda_27b_ignore_eos.py): ``generate``
-takes ``stop_eos`` and hands it to every decode path, one GPU, ``--parallel`` and two ranks (rank 1 reads the field
-rank 0 sends), and a first token that is an end token ends the reply only when end tokens count."""
+"""ignore_eos on Nemotron's CUDA engine: ``generate`` takes ``stop_eos`` and hands it to every decode path, one GPU and
+two ranks (rank 1 reads the field rank 0 sends), and a first token that is an end token ends the reply only when end
+tokens count."""
 
 import importlib
 import json
@@ -33,20 +33,6 @@ def _recording(calls, name):
     return decode
 
 
-def _flash_next(monkeypatch, calls):
-    mod = importlib.import_module("tensorfold.families.qwen4_exp.cuda.engine")
-    decode = importlib.import_module("tensorfold.families.qwen4_exp.cuda.decode")
-    monkeypatch.setattr(decode, "prefill", lambda e, prompt, sampling, **kw: END)       # the first token ends it
-    monkeypatch.setattr(decode, "serial_decode", _recording(calls, "serial"))
-    monkeypatch.setattr(decode, "mtp_decode", _recording(calls, "mtp"))
-    monkeypatch.setattr(torch.cuda, "synchronize", lambda *a: None)
-    eng = mod.FlashNextEngine.__new__(mod.FlashNextEngine)
-    eng.e = SimpleNamespace(st=SimpleNamespace(snapshot=lambda: {}), mbuf=None, last_streams=None, kept={})
-    eng.serial, eng.tp, eng.depth, eng.confidence, eng.scheduler = SimpleNamespace(), 1, 3, 0.0, None
-    eng.cache, eng.eos, eng.max_len, eng.served = [], (END,), 1024, 0
-    return mod, eng
-
-
 def _nemotron(monkeypatch, calls):
     mod = importlib.import_module("tensorfold.families.nemotron_h.cuda.app")
     decode = importlib.import_module("tensorfold.families.nemotron_h.cuda.decode")
@@ -62,7 +48,7 @@ def _nemotron(monkeypatch, calls):
 
 
 @pytest.mark.torch
-@pytest.mark.parametrize("family", [_flash_next, _nemotron], ids=["flashnext", "nemotron"])
+@pytest.mark.parametrize("family", [_nemotron], ids=["nemotron"])
 @pytest.mark.parametrize("stop_eos", [True, False])
 @pytest.mark.parametrize("draft", [True, False])
 def test_every_path_takes_stop_eos(modules, monkeypatch, family, stop_eos, draft):
@@ -75,17 +61,7 @@ def test_every_path_takes_stop_eos(modules, monkeypatch, family, stop_eos, draft
 
 
 @pytest.mark.torch
-def test_flash_next_hands_stop_eos_to_its_scheduler(modules, monkeypatch):
-    _, eng = _flash_next(monkeypatch, [])
-    got = []
-    eng.scheduler = SimpleNamespace(submit=lambda *a, **kw: got.append(kw) or {})
-    for stop_eos in (True, False):
-        eng.generate([5, 6, 7], 12, None, lambda new: False, stop_eos=stop_eos)
-    assert [kw["stop_eos"] for kw in got] == [True, False]
-
-
-@pytest.mark.torch
-@pytest.mark.parametrize("family", [_flash_next, _nemotron], ids=["flashnext", "nemotron"])
+@pytest.mark.parametrize("family", [_nemotron], ids=["nemotron"])
 @pytest.mark.parametrize("stop_eos", [True, False])
 def test_rank_one_reads_the_field_rank_zero_sends(modules, monkeypatch, family, stop_eos):
     mod, eng = family(monkeypatch, [])
@@ -94,17 +70,7 @@ def test_rank_one_reads_the_field_rank_zero_sends(modules, monkeypatch, family, 
     eng._key = lambda n: f"request/{n}"
     got = eng._share([5, 6], 9, None, True, 0, None, stop_eos)
     unpack = getattr(mod, "_unpack", None) or eng._unpack
-    assert got[6] is stop_eos and unpack(sent["text"])[6] is stop_eos      # Flash Next's keep points follow it
+    assert got[6] is stop_eos and unpack(sent["text"])[6] is stop_eos
     body = json.loads(sent["text"])
     body.pop("stop_eos")                                 # a body from before the field: end tokens count
     assert unpack(json.dumps(body))[6] is True
-
-
-@pytest.mark.torch
-def test_flash_next_streams_carry_their_own_end_tokens(modules):
-    from tensorfold.cuda.streams import Stream
-
-    multi = importlib.import_module("tensorfold.families.qwen4_exp.cuda.multi")
-    dec = multi.MultiDecoder.__new__(multi.MultiDecoder)
-    dec.eos = (END,)
-    assert dec._ends(Stream([1], 4)) == (END,) and dec._ends(Stream([1], 4, stop_eos=False)) == ()

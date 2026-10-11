@@ -12,11 +12,9 @@ import numpy as np
 import pytest
 
 from tensorfold.cuda.server import App
-from tensorfold.cuda.streams import PrefixCache
 from tensorfold.engine.family_prefill import FamilyPrefill
 from tensorfold.engine.lane_engine import LaneStream
 from tensorfold.engine.prefill_plan import PrefillPlan
-from tensorfold.families.qwen3_5.cuda.engine import Qwen27Engine
 from tensorfold.server.errors import RequestError
 from tensorfold.server.messages import normalize_messages
 from tensorfold.server.prompts import prepare_images, prepare_prompt
@@ -209,51 +207,6 @@ def test_cuda_run_forwards_vision_without_changing_text_call_options(image, draf
     assert prompt == prepared.prompt and count == 2 and sampling is None and received_draft is draft
     assert options == ({"vision": prepared.vision} if image else {})
     assert result["content"] == "A" and deltas == [{"content": "A"}]
-
-
-def fake_decode(monkeypatch):
-    module = ModuleType("tensorfold.families.qwen3_5.cuda.decode")
-    calls = []
-
-    def prefill(weights, prompt, sampling, drafter, *, state=None, vision=None, keep_at=None, **_):
-        calls.append((list(prompt), state, vision))
-        st = NS(pos=len(prompt))
-        return (st, 65) if keep_at is None else (st, 65, (NS(pos=keep_at), None))
-
-    module.prefill = prefill
-    module.draft_decode = lambda *args, **kwargs: NS(seconds=0, rounds=1, widths=[2], drafted_rows=1, accepted_drafts=0)
-    monkeypatch.setitem(sys.modules, module.__name__, module)
-    engine = Qwen27Engine.__new__(Qwen27Engine)
-    engine.context_window, engine.scheduler, engine.tp = 32, None, 1
-    engine.w, engine.draft, engine.max_rows, engine.allow_copy = NS(), None, 4, True
-    engine.cache, engine.points = PrefixCache(8), None
-    engine.cache.add([1, 2], NS(pos=2), None)
-    engine.vision = NS(encode=lambda prepared, prompt: NS(identity=prepared, tokens=tuple(prompt)))
-    return engine, calls
-
-
-def test_cuda_different_images_always_prefill_fresh_and_preserve_text_cache(monkeypatch):
-    engine, calls = fake_decode(monkeypatch)
-    old_cache = engine.cache.entries[:]
-    first, second = object(), object()
-    one = engine.generate([1, 2, 3], 2, None, lambda ids: False, vision=first)
-    two = engine.generate([1, 2, 3], 2, None, lambda ids: False, vision=second)
-    assert calls[0][1] is None and calls[1][1] is None
-    assert calls[0][2].identity is first and calls[1][2].identity is second
-    assert one["cached"] == two["cached"] == 0 and engine.cache.entries == old_cache
-    text = engine.generate([1, 2, 3, 4], 2, None, lambda ids: False)
-    assert calls[2][1] is old_cache[0][1] and calls[2][2] is None and text["cached"] == 2
-    assert engine.cache.entries[-1][0] == [1, 2, 3]            # a text prompt's entry ends one token early
-
-
-def test_cuda_concurrent_submission_receives_prepared_vision(monkeypatch):
-    engine, _ = fake_decode(monkeypatch)
-    submissions = []
-    engine.scheduler = NS(submit=lambda *args, **kwargs: submissions.append((args, kwargs)))
-    vision = object()
-    engine.generate([1, 2, 3], 2, None, lambda ids: False, vision=vision)
-    engine.generate([1, 2, 3], 2, None, lambda ids: False)
-    assert submissions[0][1] == {"stop_eos": True, "vision": vision} and submissions[1][1] == {"stop_eos": True}
 
 
 class Checkpoints:
@@ -488,14 +441,10 @@ def test_request_log_redacts_every_image_part():
     assert body["messages"][0]["content"][1]["image_url"]["url"].startswith("data:")    # the request is untouched
 
 
-def test_cuda_required_call_continuation_keeps_the_images(monkeypatch):
-    from tensorfold.vision import qwen_processing
-
+def test_cuda_required_call_continuation_keeps_the_images():
     app = cuda_app(Frontend())
-    app.vision.frontend = NS(config={"image_token_id": 7})
     grown = []
-    monkeypatch.setattr(qwen_processing, "continued",
-                        lambda prepared, ids, config: grown.append((prepared, list(ids), config)) or NS(ids=list(ids)))
+    app.vision.continued = lambda prepared, ids: grown.append((prepared, list(ids))) or NS(ids=list(ids))   # GLM's
     cuts = iter([(0, [1000])])
     app._call_gate = lambda prompt, tools: NS(cut=lambda new: next(cuts, None), observe=lambda token: None)
     tools = [{"type": "function", "function": {"name": "f", "parameters": {"type": "object", "properties": {}}}}]
@@ -505,4 +454,4 @@ def test_cuda_required_call_continuation_keeps_the_images(monkeypatch):
     first, second = app.engine_calls[0], app.engine_calls[1]
     assert first[0] == prepared.prompt and first[4] == {"vision": prepared.vision}
     assert second[0] == [*prepared.prompt, 1000] and second[4] == {"vision": NS(ids=second[0])}
-    assert grown == [(prepared.vision, second[0], {"image_token_id": 7})]
+    assert grown == [(prepared.vision, second[0])]

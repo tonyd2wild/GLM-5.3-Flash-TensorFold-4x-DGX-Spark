@@ -40,7 +40,7 @@ CONFIG = {
 
 def _checkpoint(path, exl3: bool = False, mtp: bool = True) -> None:
     """The synthetic model as an MLX 4-bit checkpoint, or with ``exl3`` as an EXL3 one: routed experts as trellis
-    tiles with their scales, every other weight BF16 (the layout of Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw).
+    tiles with their scales, every other weight BF16 (the layout of brandonmusic/GLM-5.3-Flash-tr3-4bpw).
     ``mtp=False`` leaves out the MTP layer (the last tensors written, so the others keep their values)."""
 
     rng = np.random.default_rng(3)

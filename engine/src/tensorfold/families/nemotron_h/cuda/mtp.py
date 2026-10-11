@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import torch
 
-from tensorfold.families.qwen3_5.cuda import glue as base
-from tensorfold.families.qwen3_5.cuda.qmm_fast import tile, untile
-from tensorfold.families.qwen3_5.cuda.weights import QLinear
+from tensorfold.cuda.mlx4 import glue as base
+from tensorfold.cuda.mlx4.linear import QLinear, tile, untile
 
 from . import MAX_CHAIN, attention as A, glue as G, sampler as S
 from .engine import Engine

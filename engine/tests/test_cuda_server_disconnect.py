@@ -15,7 +15,6 @@ import pytest
 pytest.importorskip("jinja2")
 
 from tensorfold.cuda import server
-from tensorfold.cuda.scheduler import Scheduler
 from tensorfold.cuda.turns import Turns
 from tensorfold.families.glm5_next.cuda.app import GlmApp
 from tensorfold.server.cancellation import RequestCancelled, socket_cancellation
@@ -348,71 +347,6 @@ def test_a_per_token_failure_stops_the_engine_and_is_raised_after_generate(tmp_p
     assert len(adds) == 3 and len(sent) == 2           # nothing decoded or sent after the failure
     monkeypatch.setattr(server.StreamDecoder, "add", add)
     assert app.run({"messages": MESSAGES, "max_tokens": 4}, True, lambda delta: True)["completion_tokens"] == 4
-
-
-class PacedDecoder:
-    """The scheduler's decoder interface: one token a round for each live stream."""
-
-    def __init__(self):
-        self.streams, self.seen = [], []
-
-    def live(self):
-        return len(self.streams)
-
-    def admit(self, stream):
-        self.streams.append(stream)
-        self.seen.append(stream)
-        stream.take([X])
-
-    def round(self):
-        time.sleep(0.002)
-        done = []
-        for stream in self.streams:
-            if not stream.done:
-                stream.take([X])
-                stream.counted(1)
-                if stream.done:
-                    done.append(stream)
-        return done
-
-    def finish(self, done):
-        self.streams = [s for s in self.streams if s not in done]
-
-    def drop(self):
-        dropped, self.streams = self.streams, []
-        return dropped
-
-
-class SchedulerEngine:
-    eos = (0,)
-    concurrent = True
-
-    def __init__(self):
-        self.decoder = PacedDecoder()
-        self.scheduler = Scheduler(self.decoder, max_streams=2)
-
-    def generate(self, prompt, max_tokens, sampling, on_tokens, draft=True):
-        return self.scheduler.submit(list(prompt), max_tokens, sampling, draft, on_tokens)
-
-
-def test_a_per_token_failure_ends_a_shared_round_stream(tmp_path, monkeypatch):
-    engine = SchedulerEngine()
-    app = app_for(tmp_path, engine)
-    add = server.StreamDecoder.add
-    calls = []
-
-    def failing_add(self, new):
-        calls.append(new)
-        if len(calls) == 3:
-            raise RuntimeError("decoding failed")
-        return add(self, new)
-
-    monkeypatch.setattr(server.StreamDecoder, "add", failing_add)
-    with pytest.raises(RuntimeError, match="decoding failed"):
-        app.run({"messages": MESSAGES, "max_tokens": 400}, True, lambda delta: True)
-    until(lambda: engine.decoder.live() == 0, "the stream to leave the decoder")
-    stream = engine.decoder.seen[0]
-    assert len(stream.out) < 10, len(stream.out)          # it ended a round or two later, not at its count
 
 
 def test_the_socket_check_reads_descriptors_past_1023():

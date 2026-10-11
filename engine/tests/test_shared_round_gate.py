@@ -59,15 +59,3 @@ def test_stream_check_controls_rounds_without_changing_outputs(checked):
     else:
         assert not seen
         assert shared_calls == [["0", "1"]] * 3
-
-
-def test_flash_without_fused_decode_serves_streams_separately(monkeypatch):
-    from tests.test_qwen4_exp_family import tiny
-    from tensorfold.families.qwen4_exp.runtime import FlashNext
-
-    monkeypatch.setenv("TF_FLASH_FUSED", "0")
-    model = FlashNext(tiny(), None, drafts=0)
-    assert model.fused is None and model.exact_width == 1
-    # the tiny model's DeltaNet heads are below mlx_lm's Metal kernel minimum, so only the gate is checked here
-    engine = LaneEngine(model)
-    assert engine.family_streams is False and engine.batch_streams == 1

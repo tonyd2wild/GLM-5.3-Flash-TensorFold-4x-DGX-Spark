@@ -17,7 +17,6 @@ from tokenizers import Tokenizer, models, pre_tokenizers
 
 from tensorfold.cuda import server
 from tensorfold.families.glm5_next.cuda.app import GlmApp
-from tensorfold.families.qwen4_exp.cuda.engine import FlashNextEngine
 
 
 class Engine:
@@ -33,13 +32,20 @@ class Engine:
 
 
 class FlashEngine(Engine):
+    """An engine with a fixed context that reserves speculative scratch rows (``depth`` drafts and one more)."""
+
     max_len = 20
     depth = 6
-    context_window = FlashNextEngine.context_window
+
+    @property
+    def context_window(self) -> int:
+        return max(0, self.max_len - self.depth - 1)
 
     def generate(self, prompt, max_tokens, sampling, on_tokens, draft=True):
-        max_tokens = FlashNextEngine._limit(self, prompt, max_tokens)
-        return super().generate(prompt, max_tokens, sampling, on_tokens, draft)
+        room = self.max_len - len(prompt) - self.depth - 1
+        if room < 1:
+            raise ValueError(f"a prompt of {len(prompt)} tokens leaves no room in the {self.max_len}-token context")
+        return super().generate(prompt, max(1, min(max_tokens, room)), sampling, on_tokens, draft)
 
 
 @pytest.fixture

@@ -9,8 +9,7 @@ from pathlib import Path
 import torch
 
 from tensorfold.cuda import experts as grouped
-from tensorfold.families.qwen3_5.cuda.qmm_fast import tile
-from tensorfold.families.qwen3_5.cuda.weights import QLinear
+from tensorfold.cuda.mlx4.linear import QLinear, tile
 
 MTP_FILE = "mtp-4bit.safetensors"
 

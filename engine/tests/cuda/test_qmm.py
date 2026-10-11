@@ -52,7 +52,7 @@ def test_rows_do_not_depend_on_row_count(n, k, gs):
 def test_27b_triton_bits(n, k):
     """Groups of 64 give the 27B's stored-layout Triton kernel's bits (its serial reference) at every row count."""
 
-    from tensorfold.families.qwen3_5.cuda import qmm as triton_qmm
+    from tensorfold.cuda.mlx4 import qmm as triton_qmm
 
     w = _weights(n, k, 64, 5 * n + k)
     q = qmm.pack(*w, 64)

@@ -132,7 +132,7 @@ def test_bad_image_count_options_are_refused_before_checkpoint_reads(backend, va
     args = cli.build_parser().parse_args(["serve", "owner/model", "--vision-max-images", value,
                                          *(["--vision"] if vision else [])])
     with pytest.raises(ValueError, match=message):
-        serve_options.check(args, NS(model_type="qwen3_5"), backend, "unused")
+        serve_options.check(args, NS(model_type="glm5_next"), backend, "unused")
 
 
 @pytest.mark.parametrize("flag, accepted", [([], 4), (["--vision-max-images", "8"], 8)])
@@ -143,7 +143,7 @@ def test_cuda_cli_count_reaches_request_preparation(tmp_path, monkeypatch, flag,
     # The real app reads a tiny local tokenizer/config, never model weights.
     folder = _model_dir.__wrapped__(tmp_path)
     engine = NS(vision=Frontend(), eos=(0,), context_window=32)
-    family = NS(title="fixture", model_type="qwen3_5", package=NS(cuda_engine=lambda *a, **k: engine))
+    family = NS(title="fixture", model_type="glm5_next", package=NS(cuda_engine=lambda *a, **k: engine))
     seen = []
 
     def serve(app, *_):
