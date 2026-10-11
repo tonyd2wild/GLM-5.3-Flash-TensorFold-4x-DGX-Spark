@@ -10,8 +10,9 @@ Where every part of this build comes from. Updated with each change.
 
 ## Removed from the base
 
-Lines whose commit was authored solely by MiaAI-Lab, found with `git blame` against the 15 commits below
-(1,058 lines in 32 files on `python-0.6`). Commits authored by others with Mia as a co-author are kept.
+Every line whose commit was authored solely by one excluded third-party author, found with `git blame` against the
+15 commits below (1,058 lines in 32 files on `python-0.6`), plus code adapted from that author's patches, their
+license file and every mention of them. Commits authored by others are kept.
 
 | commit | subject | handling |
 |---|---|---|

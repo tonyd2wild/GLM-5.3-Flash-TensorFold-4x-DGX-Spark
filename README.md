@@ -31,15 +31,16 @@ at a time, with images on MLX only. We start from it and add:
 
 ## Provenance policy
 
-Code written solely by MiaAI-Lab is not used. Commits authored by others (for example ashhart) with Mia as a
-co-author are kept, as part of the engine. Public facts and measurements may inform the work; code is written by
-us or taken from other open-source authors with credit. Every piece's origin is logged in [PROVENANCE.md](PROVENANCE.md).
+Code from one excluded third-party author is not used: their commits, code adapted from their patches, their license
+file and every mention of them are removed. Commits authored by others are kept as part of the engine. Public facts
+and measurements may inform the work; code is written by us or taken from other open-source authors with credit.
+Every piece's origin is logged in [PROVENANCE.md](PROVENANCE.md).
 
 ## Status
 
 | step | state |
 |---|---|
-| Strip MiaAI-Lab-authored lines from the Python engine | in progress |
+| Remove the excluded author's lines, adapted code and mentions from the Python engine | done (0 lines left) |
 | Map the GLM CUDA engine for TP4, our checkpoint, concurrency, vision | in progress |
 | Benchmark harness (`bench/`) with the per-type C1–C6 sweep and a vision check | ready; verified against the live vLLM lane |
 | TP4, loader, concurrency, vision | not started |
