@@ -1,0 +1,9 @@
+# never commit weights, rank caches or build output
+*.safetensors
+*.bin
+rank-cache/
+zig-out/
+.zig-cache/
+zig-cache/
+__pycache__/
+*.log
