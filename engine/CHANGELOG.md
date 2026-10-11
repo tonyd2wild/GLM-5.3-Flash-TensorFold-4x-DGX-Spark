@@ -73,17 +73,17 @@ GitHub has the full notes and the measurements behind them.
   fused DeltaNet stack uses the matrix kernel by default (#149). Thanks to @gilby.
 - **Vision:** `--vision-offload` keeps the CUDA image tower in host RAM between images (#187, closes #185); image
   parts are accepted inside tool results (#235); `--vision-image-tokens` lets many images share a larger budget
-  (#239); Flash Next on CUDA takes video (#240). Thanks to @barelyworkingcode and @MiaAI-Lab.
+  (#239); Flash Next on CUDA takes video (#240). Thanks to @barelyworkingcode.
 - **CUDA:** `/v1/decisions` on Flash Next scores labels from the prompt's last logits, the questions filling in one
   pass (#232); `TENSORFOLD_PREFILL_ROWS` sets the prompt piece rows (#238); NVFP4 and FP8 prompt rows add a tile's K
   slices in one block, with the same bits (#242); `TENSORFOLD_MEMORY_RESERVE_GIB` moves the memory floor the startup
   keeps free, by default a tenth of the pool and at least 4 GiB as before (#165); Flash Next's chain kernel takes
-  5-17% less time at 2 to 8 rows, with the same bits. Thanks to @Mirrdhyn, @MiaAI-Lab, @jschmied and @eleqtrizit.
+  5-17% less time at 2 to 8 rows, with the same bits. Thanks to @Mirrdhyn, @jschmied and @eleqtrizit.
 - **Server:** chunked request bodies are decoded before JSON parsing (#244); `/tokenize` and `/detokenize` carry
   vLLM's fields (#237); `chat_template_kwargs.thinking` is heard as `enable_thinking`, and GLM-5.3 keeps earlier
   turns' reasoning (#236); streaming usage gets its own chunk when `stream_options.include_usage` asks for it (#216);
   malformed tool-call history renders safely (#233); `/metrics` times each request's decode (#269); `/health` carries
-  the live decode and prefill speed. Thanks to @JordiPosthumus, @MiaAI-Lab, @salmanarshad321 and @sxuff.
+  the live decode and prefill speed. Thanks to @JordiPosthumus, @salmanarshad321 and @sxuff.
 - **Fixes:** an EXL3 layer with no bias no longer faults in the split-K reduction (#186); an 8-bit `lm_head` keeps its
   format in Qwen3.6's MTP draft head on CUDA (#270); a lone Flash Next stream's cache growth on CUDA stays inside the
   explicit memory budget; two ranks refuse to start with different prompt rows. Thanks to @barelyworkingcode and
@@ -168,7 +168,7 @@ GitHub has the full notes and the measurements behind them.
     the backbone wiring notes (#120). Thanks to @mgoldwasser and @feni6.
   - GLM-5.3 on two Sparks: lighter prompt buffers, the EXL3 estimate, the MTP setting, the idle rank and DFlash2's
     ring (#128, #129, #131, #132, #134), visible-pool selection (#140), and the CUDA startup reserve setting (#133).
-    Thanks to @MiaAI-Lab and @mikolaj92.
+    Thanks to @mikolaj92.
   - Flash Next: scaled n-gram tables (#148, reported in #142) and the M5 draft head fix (#147), consolidated EXL3
     tables (#145), block-scaled FP8 (#126) and the NVFP4 expert speedups (#102, #105). Thanks to @gilby,
     @cwschroeder, @shantanugoel, @jschmied and @tournierjc.
@@ -197,7 +197,7 @@ GitHub has the full notes and the measurements behind them.
   - Faster CUDA startup and model loading (#82). Thanks to @pmeenan.
   - Qwen3.6-35B-A3B serves `--parallel N` on CUDA, each reply equal to its solo run (#84), and `response_format`
     JSON schemas on the 27B, exact under drafts (#80). Thanks to @philip-pentatonic.
-  - `/health` publishes live token totals (#79). Thanks to @MiaAI-Lab.
+  - `/health` publishes live token totals (#79).
   - The 27B's concurrent drafter keeps no stale context after a prefill step (#92). Thanks to @nood-co1.
   - Flash Next lists its sparse-attention blocks past 131,072 keys in tiles, the same lists (#93). Thanks to
     @MovieMaker93.
@@ -302,7 +302,7 @@ GitHub has the full notes and the measurements behind them.
 - **Qwen3.6 on CUDA keeps serving past 8,192 rows** with expandable allocator segments: its graphs now capture into a
   new pool after the buffers grow, where every later request failed. Thanks to @philip-pentatonic (#78).
 - **Typed tool arguments on CUDA:** a Qwen tool call's array, object, number and boolean parameters arrive as JSON
-  values, as on the Mac. Thanks to @MiaAI-Lab (#75).
+  values, as on the Mac (#75).
 - **Flash Next reads a prompt chunk's n-gram rows on 16 threads,** same bytes, so prompt times vary less when the
   tables are not all in the page cache. Thanks to @MovieMaker93 (#73).
 - **On M1-M4, the MoE prompt matmuls give each GPU tile one expert's rows,** the scheduling idea of MLX's gather_mm
@@ -423,7 +423,7 @@ GitHub has the full notes and the measurements behind them.
 ## 0.3.2 (26 Sep 2026)
 
 - `tensorfold update` installs the newest release.
-- GLM-5.3-Flash reads Brandon M. Music's EXL3/TR3 weights (re-hosted by Mia-AiLab) on two DGX Sparks (experimental).
+- GLM-5.3-Flash reads Brandon M. Music's EXL3/TR3 weights on two DGX Sparks (experimental).
 
 ## 0.3.1 (26 Sep 2026)
 

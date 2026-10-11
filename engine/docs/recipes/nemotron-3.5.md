@@ -114,7 +114,7 @@ Compare drafted/serial and resumed/fresh output on each backend and rank count, 
 requests on MLX. Decode rate, cold/resumed first-token latency and peak memory are TBD [release-0.3.5].
 
 On a 64 GB M5 Pro with TensorFold 0.3.5.1 and `TensorFold/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MLX-4bit@8bbcb5b6`
-(#70; setup in the [Qwen3.8-27B recipe](qwen3.8-27b.md#a-64-gb-m5-pro-on-0351)), the fitted context was the full
+(#70), the fitted context was the full
 262,144 tokens and the lifetime peak footprint 42.21 GiB, reached during load and warm-up. A 261,780-token prompt
 prefilled in 311.5 s and resumed in 0.63 s with 261,774 tokens cached. Decode medians were 146.0, 123.3, 131.3 and
 135.3 tok/s with MTP (code sampled, chat sampled, code greedy, chat greedy) and 107.8, 109.0, 109.5 and 109.0 with

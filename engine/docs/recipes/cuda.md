@@ -8,11 +8,8 @@ Native Windows is experimental, one GPU a process and not yet run on Windows har
 
 | Family | CUDA execution |
 | --- | --- |
-| [Qwen3.8-27B](qwen3.8-27b.md#cuda) | One or two ranks, DFlash2 trees and context copies |
-| [Flash Next](qwen3.8-flash-next.md#cuda) | One or two ranks, MTP chains and CUDA graphs |
 | [Nemotron 3.5 Lightning](nemotron-3.5.md#cuda) | One or two ranks, MTP chains and CUDA graphs |
 | [GLM-5.3-Flash](glm-5.3-flash.md#cuda) | Two ranks, MTP and optional DFlash2 |
-| [Qwen3.6-35B-A3B](qwen3.6-moe.md#cuda-execution) | One rank, MTP chains and context copies, CUDA graphs |
 
 An EXL3 checkpoint's trellis is read by one shared module for every family, any codebook (3inst, mcg, mul1)
 and any width 1 to 8, mixed across a checkpoint and inside one MoE layer: `src/tensorfold/cuda/exl3/`. A family
@@ -22,38 +19,19 @@ downloading. The dense linear layer, its plan and its measured throughput are in
 
 ## Checkpoints
 
-On CUDA, TensorFold serves NVFP4 and EXL3 checkpoints, usually the ones Mia-AiLab's DGX Spark recipes run or your
-own exports, and MLX 4-bit checkpoints as the portable option: the same files a Mac serves. `tensorfold serve` loads
+On CUDA, TensorFold serves NVFP4 and EXL3 checkpoints, published exports or your own, and MLX 4-bit checkpoints
+as the portable option: the same files a Mac serves. `tensorfold serve` loads
 the checkpoint you name; it picks none by itself.
 
 | Family | NVFP4 | EXL3 | MLX 4-bit |
 | --- | --- | --- | --- |
-| Qwen3.8-27B | `nvidia/Qwen3.8-27B-NVFP4`, one rank | `turboderp/Qwen3.8-27B-exl3`, one rank | one or two ranks |
-| Flash Next | `Mia-AiLab/Qwen3.8-Flash-Next-NVFP4` (a mirror of local-inference-lab's), `local-inference-lab/Qwen3.8-Flash-Next-NVFP4`, `RadixArk/Qwen3.8-Flash-Next-NVFP4`, one rank | `turboderp/Qwen3.8-Flash-Next-exl3`, one rank | one or two ranks |
-| GLM-5.3-Flash | not read | `brandonmusic/GLM-5.3-Flash-tr3-4bpw` (Brandon M. Music's; re-hosted as `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw`), two ranks (experimental) | two ranks |
-| Qwen3.6-35B-A3B | not read yet | not read yet | one rank |
+| GLM-5.3-Flash | not read | `brandonmusic/GLM-5.3-Flash-tr3-4bpw` (Brandon M. Music's, under his ShapleyMCG License 1.0), two ranks (experimental) | two ranks |
 | Nemotron 3.5 Lightning | not read yet | not read yet | one or two ranks |
-
-Mia-AiLab's checkpoints on Hugging Face (30 Sep 2026):
-- Loaded and served here: `Mia-AiLab/GLM-5.3-Flash-EXL3-TR3-4bpw` (two Sparks; a byte-identical re-host of Brandon M.
-  Music's `brandonmusic/GLM-5.3-Flash-tr3-4bpw`, under his ShapleyMCG License 1.0) and
-  `Mia-AiLab/Qwen3.8-Flash-Next-NVFP4` (found by its `model_type`, `qwen3_8_flash_next`).
-- Not tried yet: `Mia-AiLab/Qwen3.8-27B-EXL3`, `Mia-AiLab/Qwen3.8-27B-EXL3-2.0bpw`,
-  `Mia-AiLab/Qwen3.8-27B-EXL3-3.5bpw`, `Mia-AiLab/Qwen3.8-27B-DFlash2-EXL3-5.0bpw` (a drafter),
-  `Mia-AiLab/DeepSeek-V4.1-Flash-EXL3-2.9bpw` and `-3.0bpw` (DeepSeek-V4 has no CUDA engine yet).
-- Not readable: the GGUF repositories (`Qwable-3.6-27b`, `Qwable-3.6-27b-MTP`, `Qwable-3.6-35b`,
-  `Gemmable-4-12B-MTP-GGUF`, `Gemmable-4-31B-MTP-GGUF`); TensorFold reads no GGUF.
 
 Prompts take bf16 activations by default. What that costs against the FP8 prompt path (`--prefill-fp8`), by
 format ([prompt precision](#prompt-precision)):
 - EXL3, every family: nothing; EXL3 prompts never took FP8 activations.
-- NVFP4: about level on Flash Next (0.94-1.03x from 2k to 64k on local-inference-lab's export; RadixArk's has no
-  FP8 prompt kernel, so nothing changes). The 27B's NVFP4 export runs its prompts in its own math by default
-  ([NVFP4 precision](#nvfp4-precision)): 6,296-7,484 tok/s from 2k to 32k on an RTX PRO 6000, 0.95-0.97x vLLM's;
-  at `--precision full` its bf16 prompts run 3,005-3,267 tok/s.
-- MLX 4-bit: 0.73-0.82x on the 27B and 0.90-0.96x on Qwen3.6 from 2k to 128k; `--prefill-fp8` gives that speed
-  back at FP8's precision. Flash Next's, GLM's and Nemotron's MLX 4-bit prompts were already bf16, so nothing
-  changes for them.
+- MLX 4-bit: GLM's and Nemotron's MLX 4-bit prompts were already bf16, so nothing changes for them.
 
 ## Arithmetic and state
 
@@ -68,8 +46,7 @@ refuse to start with different transports. A model exchange calls `fast_gather`,
 `check` raises a transport's recorded failure after a synchronizing exchange. A transport moves bytes, so a reply
 never depends on it.
 
-The default two-rank decode paths gather fp32 partials and add them in rank order. The dense Qwen
-prefill path gathers bf16 partials and adds them in fp32. Rank 0 chooses the window and both ranks
+The default two-rank decode paths gather fp32 partials and add them in rank order. Rank 0 chooses the window and both ranks
 execute the same forwards. Prefix token IDs must describe the state actually cached on each rank.
 CUDA graphs replay the same kernels using stable buffers; changing capture shapes must preserve these rules.
 
@@ -83,10 +60,8 @@ activations, as decode does. A row's bits never depend on its chunk or the kerne
 equals a fresh one; they differ from decode's, so the engines retain prompt-end states and prefill replies
 again on a follow-up.
 
-`tensorfold/cuda/kernels/gdn.py` and `attention.py` support several streams in one call. Each stream
-supplies its own tree, cache offsets and accepted path. `tensorfold/cuda/experts.py` groups routed
-row/expert pairs so the MLX 4-bit formats of Flash Next, GLM and Nemotron share expert kernels, with
-separate prefill and decode forms. A shared call must preserve each row's arithmetic and each stream's cache.
+`tensorfold/cuda/experts.py` groups routed row/expert pairs so the MLX 4-bit formats of GLM and Nemotron share
+expert kernels, with separate prefill and decode forms. A shared call must preserve each row's arithmetic and each stream's cache.
 
 <a id="prompt-precision"></a>
 
