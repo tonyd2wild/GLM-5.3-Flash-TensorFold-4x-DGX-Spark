@@ -1,0 +1,302 @@
+"""Read each rank directly from checkpoint bytes or a saved rank folder, preserving packed groups at every split boundary."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import struct
+import sys
+from pathlib import Path
+
+import numpy as np
+
+ROW = (
+    r"\.mlp\.experts\.\d+\.(gate|up)_proj\.",
+    r"\.mlp\.shared_experts\.(gate|up)_proj\.",
+    r"\.mlp\.(gate|up)_proj\.",
+    r"\.self_attn\.(q|k|v)_proj\.",
+    r"\.self_attn\.(q|k|v)_conv1d\.",
+    r"\.self_attn\.(f_b|g_b|b)_proj\.",
+    r"\.self_attn\.(A_log|dt_bias)$",
+    r"\.self_attn\.(q_b|kv_b)_proj\.",
+)
+COL = (
+    r"\.mlp\.experts\.\d+\.down_proj\.",
+    r"\.mlp\.shared_experts\.down_proj\.",
+    r"\.mlp\.down_proj\.",
+    r"\.self_attn\.o_proj\.",
+)
+REP = (
+    r"^lm_head\.", r"embed_tokens\.", r"^model\.language_model\.norm\.weight$",
+    r"_layernorm\.weight$", r"\.hc_(attn|ffn)_(fn|base|scale)$", r"\.mlp\.gate\.(weight|e_score_correction_bias)$",
+    r"\.self_attn\.indexer\.", r"\.self_attn\.(q_a_proj|kv_a_proj_with_mqa)\.", r"\.self_attn\.(f_a|g_a)_proj\.",
+    r"\.self_attn\.o_norm\.weight$", r"\.(eh_proj)\.", r"\.(enorm|hnorm)\.weight$", r"\.shared_head\.norm\.weight$",
+)
+RUN = 128 << 20          # most bytes one read of neighbouring tensors takes (``RankReader.prefetch``)
+GAP = 1 << 20            # most unused bytes such a read spans between two tensors (more reads other layers twice)
+READERS = 8              # reads in flight: past this the layers are built slower than they are read
+DTYPE_BYTES = {"U32": 4, "I32": 4, "F32": 4, "BF16": 2, "F16": 2, "I16": 2, "U16": 2, "U8": 1, "I8": 1, "I64": 8,
+               "F64": 8, "F8_E4M3": 1, "F8_E5M2": 1, "F8_E8M0": 1}
+# the files a rank folder needs besides its weights (the tokenizer, chat template and configs)
+SMALL = ("config.json", "generation_config.json", "tokenizer.json", "tokenizer_config.json", "chat_template.jinja",
+         "processor_config.json", "model.safetensors.index.json")
+
+
+# EXL3 gate/up split tile columns and svh; down splits tile rows and suh; each replicates the remaining tensors.
+EXL3_EXPERT = re.compile(r"\.mlp\.experts\.\d+\.(gate|up|down)_proj\.(trellis|suh|svh|mcg)$")
+EXL3_RULES = {("gate", "trellis"): "dim1", ("gate", "suh"): "rep", ("gate", "svh"): "row",
+              ("down", "trellis"): "row", ("down", "suh"): "row", ("down", "svh"): "rep"}
+
+
+def rule(name: str) -> str:
+    if name.startswith("model.visual.") or not name.startswith(("model.", "lm_head.")):
+        return "drop"                                    # the vision tower (rank 0 reads it whole) and pack markers
+    m = EXL3_EXPERT.search(name)
+    if m:
+        proj, part = m.groups()
+        return "rep" if part == "mcg" else EXL3_RULES[("gate" if proj == "up" else proj, part)]
+    hits = [kind for kind, pats in (("row", ROW), ("col", COL), ("rep", REP)) if any(re.search(p, name) for p in pats)]
+    if len(hits) != 1:
+        raise ValueError(f"{name}: split rule is ambiguous or missing ({hits})")
+    return hits[0]
+
+
+def read_header(path: str | Path) -> tuple[dict, int]:
+    with open(path, "rb") as f:
+        n = struct.unpack("<Q", f.read(8))[0]
+        header = json.loads(f.read(n))
+    return header, 8 + n
+
+
+def split_bytes(raw: np.ndarray, shape: list[int], itemsize: int, kind: str, rank: int, ranks: int = 2) -> tuple[np.ndarray, list[int]]:
+    """A tensor's bytes -> rank's part of them and its shape (ranks: 2 or 4)."""
+
+    if kind == "rep" or not shape:                       # a scalar (a ModelOpt per-matrix scale) is every rank's
+        return raw, list(shape)
+    if kind == "row":
+        rows = shape[0]
+        if rows % ranks:
+            raise ValueError(f"row split of leading dim {shape} not divisible by {ranks}")
+        per = raw.size // rows
+        chunk = rows // ranks
+        return raw[rank * chunk * per:(rank + 1) * chunk * per], [chunk] + list(shape[1:])
+    if kind == "col":
+        if len(shape) != 2 or shape[1] % ranks:
+            raise ValueError(f"column split needs a 2-D shape divisible by {ranks}, got {shape}")
+        view = raw.reshape(shape[0], shape[1] * itemsize)
+        chunk = shape[1] // ranks
+        part = np.ascontiguousarray(view[:, rank * chunk * itemsize:(rank + 1) * chunk * itemsize])
+        return part.reshape(-1), [shape[0], chunk]
+    if kind == "dim1":                                   # the second axis of a 2-D or higher tensor
+        if len(shape) < 2 or shape[1] % ranks:
+            raise ValueError(f"split of the second axis needs a second dim divisible by {ranks}, got {shape}")
+        inner = int(np.prod(shape[2:])) * itemsize
+        view = raw.reshape(shape[0], shape[1] * inner)
+        chunk = shape[1] // ranks
+        part = np.ascontiguousarray(view[:, rank * chunk * inner:(rank + 1) * chunk * inner])
+        return part.reshape(-1), [shape[0], chunk] + list(shape[2:])
+    raise ValueError(kind)
+
+
+def split_device(raw, shape: list[int], itemsize: int, kind: str, rank: int, ranks: int = 2):
+    """split_bytes for a uint8 tensor on the GPU: the rank's part (a new contiguous tensor) and its shape."""
+
+    if kind == "rep" or not shape:
+        return raw.clone(), list(shape)
+    if kind == "row":
+        if shape[0] % ranks:
+            raise ValueError(f"row split of leading dim {shape} not divisible by {ranks}")
+        per, chunk = raw.numel() // shape[0], shape[0] // ranks
+        return raw[rank * chunk * per:(rank + 1) * chunk * per].clone(), [chunk] + list(shape[1:])
+    if kind in ("col", "dim1"):
+        if len(shape) < 2 or shape[1] % ranks or (kind == "col" and len(shape) != 2):
+            raise ValueError(f"{kind} split needs a second dim divisible by {ranks}, got {shape}")
+        inner = int(np.prod(shape[2:])) * itemsize
+        chunk = shape[1] // ranks
+        part = raw.view(shape[0], shape[1] * inner)[:, rank * chunk * inner:(rank + 1) * chunk * inner]
+        return part.contiguous().reshape(-1), [shape[0], chunk] + list(shape[2:])
+    raise ValueError(kind)
+
+
+def torch_dtype(dtype: str):
+    import torch
+
+    return {"U32": torch.uint32, "I32": torch.int32, "F32": torch.float32, "BF16": torch.bfloat16, "F16": torch.float16,
+            "I16": torch.int16, "U16": torch.uint16, "U8": torch.uint8, "I8": torch.int8, "I64": torch.int64,
+            "F64": torch.float64, "F8_E4M3": torch.float8_e4m3fn, "F8_E5M2": torch.float8_e5m2,
+            "F8_E8M0": torch.uint8}[dtype]
+
+
+def rank_files(model_dir: str | Path, rank: int) -> list[Path]:
+    return sorted(Path(model_dir).glob(f"*.rank{rank}.safetensors"))
+
+
+class RankReader:
+    """Read stored-dtype CPU tensors for one rank from the full checkpoint or its pre-split folder."""
+
+    def __init__(self, model_dir: str | Path, rank: int, ranks: int = 2) -> None:
+        from tensorfold.cuda.direct_read import ReadAhead, Reader, SafeTensors
+
+        self.dir, self.rank, self.ranks = Path(model_dir), rank, ranks
+        self.io = Reader()                                # O_DIRECT reads where the file system allows them
+        self.reads = ReadAhead(self.io, READERS, RUN, GAP)
+        mine, other = rank_files(self.dir, rank), rank_files(self.dir, 1 - rank)
+        if other and not mine:
+            raise ValueError(f"{self.dir} holds rank {1 - rank}'s share: give rank {rank} its own folder or the "
+                             "full checkpoint")
+        self.split = bool(mine)
+        if self.split:
+            self.folder = SafeTensors(mine, self.io)
+            self.index = dict.fromkeys(self.folder.keys())
+            return
+        index = self.dir / "model.safetensors.index.json"
+        if index.exists():
+            names = json.loads(index.read_text())["weight_map"]
+        else:
+            names = {k: p.name for p in sorted(self.dir.glob("*.safetensors")) for k in read_header(p)[0]
+                     if k != "__metadata__"}
+        self.files: dict[str, tuple[dict, int]] = {}
+        self.index = dict(names)
+
+    def prefetch(self, names, device=None) -> None:
+        """Start reading ``names`` (a layer's hundreds of small expert tensors) in shared reads; with a CUDA ``device``, ``get`` returns them uploaded."""
+
+        items = []
+        for name in dict.fromkeys(names):
+            span = self._span(name)
+            items.append((name, span[0], span[1], span[2], span))
+        self.reads.queue(items, device, self._cut)
+
+    @property
+    def ahead(self) -> dict:
+        return self.reads.ahead
+
+    def get(self, name: str):
+        out = self.reads.take(name)
+        return out if out is not None else self._read(name)
+
+    def close(self) -> None:
+        self.reads.close()
+
+    def _span(self, name: str) -> tuple[str, int, int, str, list[int], str]:
+        """(file, first byte, end byte, split kind, shape, dtype) of the bytes this rank reads for ``name``."""
+
+        if self.split:                                    # a rank folder holds the rank's tensors as they are
+            path, begin, n, dtype, shape = self.folder.where[name]
+            return str(path), begin, begin + n, "rep", list(shape), dtype
+        file = str(self.dir / self.index[name])
+        if file not in self.files:
+            self.files[file] = read_header(file)
+        header, base = self.files[file]
+        info = header[name]
+        kind = rule(name)
+        if kind == "drop":
+            raise KeyError(f"{name} is not used by the engine")
+        a, b = info["data_offsets"]
+        shape = list(info["shape"])
+        if kind == "row" and shape and shape[0] % self.ranks == 0:   # the rank's rows are one run: read only those
+            chunk = shape[0] // self.ranks
+            per = (b - a) // shape[0] * chunk
+            a, b, kind, shape = a + self.rank * per, a + (self.rank + 1) * per, "rep", [chunk] + shape[1:]
+        return file, base + a, base + b, kind, shape, info["dtype"]
+
+    def _tensor(self, raw: np.ndarray, span: tuple, own: bool):
+        """The rank's tensor from the span's bytes; ``own``: never a view of ``raw`` (a shared read's buffer)."""
+
+        import torch
+
+        _, _, _, kind, shape, dtype = span
+        data, shape = split_bytes(raw, shape, DTYPE_BYTES[dtype], kind, self.rank, self.ranks)
+        if own and np.may_share_memory(data, raw):
+            data = data.copy()
+        return torch.from_numpy(data).view(torch_dtype(dtype)).reshape(shape)
+
+    def _read(self, name: str):
+        if self.split:
+            return self.folder.get(name)
+        span = self._span(name)
+        return self._tensor(self.io.read(span[0], span[1], span[2] - span[1]).numpy(), span, own=False)
+
+    def _cut(self, raw, span: tuple):
+        """The rank's tensor from its span's bytes, a view of a shared read (so copied), on the host or the device."""
+
+        if not raw.is_cuda:
+            return self._tensor(raw.numpy(), span, own=True)
+        _, _, _, kind, shape, dtype = span
+        data, shape = split_device(raw, shape, DTYPE_BYTES[dtype], kind, self.rank, self.ranks)
+        return data.view(torch_dtype(dtype)).reshape(shape)
+
+def write(path: str, tensors: list[tuple[str, str, list[int], np.ndarray]], metadata: dict | None) -> None:
+    header: dict = {}
+    offset = 0
+    for name, dtype, shape, data in tensors:
+        header[name] = {"dtype": dtype, "shape": shape, "data_offsets": [offset, offset + data.size]}
+        offset += data.size
+    if metadata:
+        header["__metadata__"] = metadata
+    blob = json.dumps(header, separators=(",", ":")).encode()
+    blob += b" " * (-len(blob) % 8)
+    tmp = path + ".part"
+    with open(tmp, "wb") as f:
+        f.write(struct.pack("<Q", len(blob)))
+        f.write(blob)
+        for _, _, _, data in tensors:
+            f.write(memoryview(data))
+    os.replace(tmp, path)
+
+
+def split_file(src: str | Path, out: str | Path, rank: int, ranks: int = 2) -> dict:
+    """One checkpoint file -> OUT/<stem>.rank<R>.safetensors with the rank's part of every tensor it keeps."""
+
+    header, base = read_header(src)
+    metadata = header.pop("__metadata__", None)
+    mm = np.memmap(src, dtype=np.uint8, mode="r")
+    stem = os.path.basename(str(src)).replace(".safetensors", "")
+    summary = {"rep": 0, "row": 0, "col": 0, "dim1": 0, "drop": 0}
+    part = []
+    for name in sorted(header, key=lambda k: header[k]["data_offsets"][0]):
+        info = header[name]
+        kind = rule(name)
+        summary[kind] += 1
+        if kind == "drop":
+            continue
+        a, b = info["data_offsets"]
+        itemsize = DTYPE_BYTES[info["dtype"]]
+        data, shape = split_bytes(mm[base + a:base + b], info["shape"], itemsize, kind, rank, ranks)
+        if int(np.prod(shape)) * itemsize != data.size:
+            raise ValueError(f"{name}: {shape} does not match {data.size} bytes")
+        part.append((name, info["dtype"], shape, data))
+    os.makedirs(out, exist_ok=True)
+    if part:
+        write(os.path.join(str(out), f"{stem}.rank{rank}.safetensors"), part, metadata)
+    return summary
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("model_dir", type=Path, help="the checkpoint (e.g. the snapshot `tensorfold pull` downloaded)")
+    p.add_argument("--rank", type=int, choices=(0, 1, 2, 3), required=True, help="the rank this machine serves")
+    p.add_argument("--ranks", type=int, choices=(2, 4), default=2, help="total ranks the weights split over")
+    p.add_argument("out", type=Path, help="the folder to write (then: tensorfold serve OUT --tp 2 --rank R ...)")
+    args = p.parse_args(argv)
+    files = sorted(args.model_dir.glob("model-*.safetensors"))
+    if not files:
+        raise SystemExit(f"{args.model_dir}: no model-*.safetensors files")
+    args.out.mkdir(parents=True, exist_ok=True)
+    for name in SMALL:
+        if (args.model_dir / name).exists():
+            shutil.copyfile(args.model_dir / name, args.out / name)
+    for src in files:
+        stem = src.name.replace(".safetensors", "")
+        if (args.out / f"{stem}.rank{args.rank}.safetensors").exists():
+            continue
+        print(src.name, split_file(src, args.out, args.rank, args.ranks), flush=True)
+    print(f"rank {args.rank}'s share of {len(files)} files in {args.out}", flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
