@@ -238,7 +238,7 @@ class Weights:
                 seen.add(t.data_ptr())
                 total += t.numel() * t.element_size()
             elif isinstance(t, (Q4, B16, grouped.Experts, Exl3Experts, modelopt.nvx.Experts4, HCW, KDAW, DSAW, MLPW, MoEW,
-                                LayerW, MTPW, IndexW)):
+                                LayerW, MTPW, IndexW)) or hasattr(t, "w8"):
                 for v in vars(t).values():
                     add(v)
             elif isinstance(t, (list, tuple)):
@@ -283,13 +283,14 @@ def load(model_dir: str | Path, *, rank: int, device: str = "cuda", world: int =
         return (as_i32(t(name + ".weight")), t(name + ".scales"), t(name + ".biases"))
 
     def q4(name: str) -> Q4 | B16:
-        if mo:
-            return make_b16(modelopt.dense(rd, PREFIX + name, dev))
+        if mo:                                        # 8-bit as stored (MXFP8, FP8 blocks), else BF16
+            return modelopt.linears(rd, [PREFIX + name], dev) or make_b16(modelopt.dense(rd, PREFIX + name, dev))
         return make_b16(t(name + ".weight")) if exl3 else make_q4(*trip(name))
 
     def stack(names: list[str]) -> Q4 | B16:
         if mo:
-            return stack_b16([modelopt.dense(rd, PREFIX + n, dev) for n in names])
+            return (modelopt.linears(rd, [PREFIX + n for n in names], dev)
+                    or stack_b16([modelopt.dense(rd, PREFIX + n, dev) for n in names]))
         if exl3:
             return stack_b16([t(n + ".weight") for n in names])
         return stack_q4([trip(n) for n in names])
