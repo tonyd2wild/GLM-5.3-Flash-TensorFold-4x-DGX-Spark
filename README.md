@@ -1,69 +1,59 @@
-# DeepSeek-V4.1-Flash on TensorFold, TP4 on 4× DGX Spark, with our own weights
+# GLM-5.3-Flash on TensorFold, TP4 on 4× DGX Spark, with our derisked weights
 
-> **Special credit:** [WestWaters/pollard-weights](https://github.com/WestWaters/pollard-weights) (the method behind
-> our EXL3 expert pack) and [tonyd2wild](https://github.com/tonyd2wild) (the 4× Spark serving recipe this fleet runs).
-> Full ledger: [CREDITS.md](CREDITS.md).
+> **Special credit:** [tonyd2wild](https://github.com/tonyd2wild) (the 4× Spark serving recipe this fleet runs) and
+> [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine). Full ledger: [CREDITS.md](CREDITS.md).
 
-**Private working repo.** Goal: serve our uncensored `DeepSeek-V4.1-Flash-EXL3-Pollard-Abliterated` pack on the
-[TensorFold](https://github.com/ashhart/TensorFold) native Zig engine at tensor-parallel 4 across our four DGX Sparks,
-using bertholomus's DeepSeek-V4.1 TP4 port. Upstream `main` does not serve DeepSeek-V4.1 yet (tracker
-ashhart/TensorFold#559).
+**Private working repo.** Goal: serve GLM-5.3-Flash on the TensorFold engine at tensor-parallel 4 across our four
+DGX Sparks, from our derisked weights as stored, with Reddie as the head node serving the weights over NFS.
 
-Why: the TP4 port reports about 2.5× our vLLM lane's single-stream decode (code 160 / prose 95 tok/s vs about
-64) with prefill about even. Those are their numbers on their weights; ours are not measured yet.
+| target | value |
+|---|---|
+| weights | `glm-quant-mix-derisked/lossless8` (198 GB, on Reddie; NFS to the other three) |
+| layout | TP4: Reddie (rank 0, HTTP), Spark4, Asusi, Bluey |
+| context | 500,000 tokens |
+| vision | on (images) |
+| thinking | `reasoning_effort: low` by default |
+| endpoint | `glm-5.3-flash` on `:8000` (the fleet's name and port) |
+| baseline | C1–C6 × prose, code, math, JSON, count-to-100, structured: prefill, decode, TTFT, throughput |
+
+## Approach
+
+No TensorFold build serves GLM-5.3-Flash on CUDA at TP4, and none serves our checkpoint format. TensorFold's Python
+engine (`python-0.6`, Apache-2.0, ashhart) serves GLM-5.3-Flash on CUDA at TP2 from MLX 4-bit weights, one request
+at a time, with images on MLX only. We start from it and add:
+
+1. **TP4** (today: two ranks).
+2. **Our checkpoint as stored**: NVFP4 routed experts through the engine's existing NVFP4 kernels; the MXFP8 KDA
+   projections, FP8-block shared experts and DSA projections dequantized to BF16 at load (about 3 GB a rank).
+3. **Concurrent requests** for the C1–C6 sweep.
+4. **Vision on CUDA**: GLM's vision tower in torch on rank 0, its features spliced into the prompt.
+5. **500K context**, `reasoning_effort` low.
+
+## Provenance policy
+
+Code written solely by MiaAI-Lab is not used. Commits authored by others (for example ashhart) with Mia as a
+co-author are kept, as part of the engine. Public facts and measurements may inform the work; code is written by
+us or taken from other open-source authors with credit. Every piece's origin is logged in [PROVENANCE.md](PROVENANCE.md).
 
 ## Status
 
 | step | state |
 |---|---|
-| 1. Inventory: what the engine loads vs what our pack has | **in progress** (2026-10-11) |
-| 2. Kernel coverage: which EXL3 bit widths the kit ships | **in progress** |
-| 3. Convert our FP8/BF16 dense tensors to EXL3 mul1 (Route A) | not started |
-| 4. Rank files (CPU only) | not started; disk is tight on Spark4 and Asusi |
-| 5. Boot + gates (needs GLM down: Tony's go) | not started |
+| Strip MiaAI-Lab-authored lines from the Python engine | in progress |
+| Map the GLM CUDA engine for TP4, our checkpoint, concurrency, vision | in progress |
+| Benchmark harness (`bench/`) with the per-type C1–C6 sweep and a vision check | ready; verified against the live vLLM lane |
+| TP4, loader, concurrency, vision | not started |
+| Boot on all four Sparks (needs the live GLM down) | not started |
+| Baseline | not started |
 
-Nothing has run on a GPU. GLM-5.3 stays live on `:8000`.
+## Fleet facts
 
-## Layout
-
-| path | what |
-|---|---|
-| `engine/` | bertholomus/TensorFold, branch `deepseek-v41-zig-tp4` @ `5940208` (Apache-2.0), added as a squashed git subtree. Our engine patches land here as separate commits. Update with `git subtree pull --prefix engine https://github.com/bertholomus/TensorFold.git deepseek-v41-zig-tp4 --squash` |
-| `inventory/` | header-only inventory of our pack (`pack_inventory.py`, output in `pollard-abliterated-headers.txt`) |
-| `HANDOFF.md` | Kai's handoff (2026-10-11): ground rules, plan, fixes, gates, checkpoints |
-| `CREDITS.md` | who we build on |
-
-Recipe and kernel kit: [bertholomus/deepseek-v4.1-tensorfold-tp4-4xgb10](https://github.com/bertholomus/deepseek-v4.1-tensorfold-tp4-4xgb10)
-(Apache-2.0, tag `v0.1.1`). Not vendored yet; fetched at deploy time.
-
-## Ground rules
-
-- **Our own weights only.** No third-party weight packs.
-- **GLM-5.3 on `:8000` is the fleet's live model.** Nothing that stops or crowds it without Tony's go for that window.
-- **Never delete under `/var/tmp/models/`** on any node: the packs are hardlinked to each other. New output goes to a new directory.
-- **Nothing public** (upstream PRs, issue comments, HF uploads, posts) without Tony's word.
-
-## Our pack today (read from the safetensors headers)
-
-`/var/tmp/models/DeepSeek-V4.1-Flash-EXL3-Pollard-Abliterated` on Reddie: 188,245 tensors in 49 hardlinked shards.
-
-| tensors | format today |
-|---|---|
-| routed experts, 40 layers × 384 × `w1/w3/w2` | **EXL3 mul1** (`trellis` I16, `suh`/`svh` F16, `mul1` I32), 3 or 4 bits per layer |
-| `attn.wq_a`, `wq_b`, `wkv`, `wo_a`, `wo_b` (40 layers; abliteration overlay on `wo_b` L10-35) | FP8 e4m3 + e8m0 32×32 block scale |
-| `ffn.shared_experts.w1/w2/w3` (40 layers) | FP8 |
-| `attn.indexer.wq_b` (8 layers), `engram.wkv` (2), `mtp.0.main_proj` | FP8 |
-| `head`, `attn.compressor.wkv/wgate`, `attn.indexer.wk`, `indexer.weights_proj`, `ffn.gate.weight` | BF16 |
-| `mtp.0-2` blocks: attention + shared experts FP8; 3 × 128 experts | native FP4 (I8-packed + e8m0 scale) |
-| norms, `hc_*` (mHC), `attn_sink`, gate bias, embeddings, vision, aligner | BF16 / F32 plain |
-
-## Fleet facts that shape the plan
-
-| node | free disk (2026-10-11) | note |
+| node | rank | free disk (2026-10-11) |
 |---|---|---|
-| Reddie | 235 GB | holds every pack |
-| Bluey | 559 GB | |
-| Spark4 | **47 GB** | cannot hold a ~56+ GB rank file locally |
-| Asusi | **37 GB** | same |
+| Reddie | 0 (head, NFS server, HTTP) | 235 GB |
+| Spark4 | 1 | 47 GB |
+| Asusi | 2 | 37 GB |
+| Bluey | 3 | 559 GB |
 
-Each node has about 20 GiB free memory while GLM serves, so GPU work waits for a window.
+Each node has about 20 GiB free memory while the live GLM serves, so GPU work waits for a window. The existing
+`glm53-roce:v11` image already carries Python 3.12, torch 2.13 (CUDA 13.0), NCCL 2.29 and nvcc 13.0.
