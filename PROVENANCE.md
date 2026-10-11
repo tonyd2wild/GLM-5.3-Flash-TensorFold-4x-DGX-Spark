@@ -8,6 +8,19 @@ Where every part of this build comes from. Updated with each change.
 |---|---|---|---|
 | engine | ashhart/TensorFold, branch `python-0.6` @ `ed78d6f` (2026-10-07) | Apache-2.0 | the Python engine; GLM-5.3-Flash CUDA family `families/glm5_next/cuda/` |
 
+## `engine-multi/` (the serving engine since 2026-10-11)
+
+| part | source | license | notes |
+|---|---|---|---|
+| engine | ashhart/TensorFold v0.6.0 | Apache-2.0 | the Python engine |
+| GLM patches | MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold, branch `tp4` @ `d220030` (106 patches) | Apache-2.0 | concurrent requests, TP-N, FP8 KV, RoCE all-gathers, split prefill, copy drafts, vision; kept as published with their notices |
+| ModelOpt reader, splitter, family check; NVFP4 experts and 8-bit linears in every forward; CPU test; `TEST.md` | ours | ours, on Apache-2.0 code | ports our derisked pack onto the engine |
+| vision on templates that write their own media markers (`media_template`) | ours | ours, on Apache-2.0 code | |
+
+Updated with `git subtree pull --prefix=engine-multi <tree> mia-derisk --squash`.
+
+## `engine/` (the previous one-at-a-time build)
+
 ## Removed from the base
 
 Every line whose commit was authored solely by one excluded third-party author, found with `git blame` against the

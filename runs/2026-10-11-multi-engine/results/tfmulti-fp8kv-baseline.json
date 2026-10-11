@@ -1,0 +1,1629 @@
+{
+  "label": "tfmulti-fp8kv-baseline-port8001-2026-10-11",
+  "started": "2026-10-11 22:17:37",
+  "url": "http://127.0.0.1:8001",
+  "effort": "low",
+  "reps": 3,
+  "rounds": 3,
+  "meta": {
+    "preemptions_total": 0
+  },
+  "vision": {
+    "ok": true,
+    "seconds": 1.59,
+    "reply": "The image shows red on the left half and blue on the right half.",
+    "usage": {
+      "prompt_tokens": 132,
+      "completion_tokens": 36,
+      "total_tokens": 168,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 20
+      }
+    }
+  },
+  "single": {
+    "count100": {
+      "decode_tok_s": {
+        "median": 149.91,
+        "p90": 150.5,
+        "peak": 150.5,
+        "min": 149.47,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 135.62,
+        "p90": 135.78,
+        "peak": 135.78,
+        "min": 135.03,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.15,
+        "p90": 0.15,
+        "peak": 0.15,
+        "min": 0.15,
+        "n": 3
+      },
+      "completion_tokens": 201,
+      "prompt_tokens": 32,
+      "spec": {}
+    },
+    "count300": {
+      "decode_tok_s": {
+        "median": 141.79,
+        "p90": 142.06,
+        "peak": 142.06,
+        "min": 140.98,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 137.5,
+        "p90": 137.73,
+        "peak": 137.73,
+        "min": 136.76,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.15,
+        "p90": 0.15,
+        "peak": 0.15,
+        "min": 0.15,
+        "n": 3
+      },
+      "completion_tokens": 669,
+      "prompt_tokens": 32,
+      "spec": {}
+    },
+    "code": {
+      "decode_tok_s": {
+        "median": 108.95,
+        "p90": 109.07,
+        "peak": 109.07,
+        "min": 108.74,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 106.52,
+        "p90": 106.61,
+        "peak": 106.61,
+        "min": 106.31,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.16,
+        "p90": 0.16,
+        "peak": 0.16,
+        "min": 0.16,
+        "n": 3
+      },
+      "completion_tokens": 700,
+      "prompt_tokens": 57,
+      "spec": {}
+    },
+    "json": {
+      "decode_tok_s": {
+        "median": 113.02,
+        "p90": 113.19,
+        "peak": 113.19,
+        "min": 112.73,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 111.15,
+        "p90": 111.4,
+        "peak": 111.4,
+        "min": 107.97,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.13,
+        "p90": 0.32,
+        "peak": 0.32,
+        "min": 0.12,
+        "n": 3
+      },
+      "completion_tokens": 783,
+      "prompt_tokens": 81,
+      "spec": {}
+    },
+    "sql": {
+      "decode_tok_s": {
+        "median": 83.37,
+        "p90": 83.46,
+        "peak": 83.46,
+        "min": 83.27,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 82.49,
+        "p90": 82.66,
+        "peak": 82.66,
+        "min": 80.32,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.08,
+        "p90": 0.27,
+        "peak": 0.27,
+        "min": 0.08,
+        "n": 3
+      },
+      "completion_tokens": 558,
+      "prompt_tokens": 76,
+      "spec": {}
+    },
+    "tooluse": {
+      "decode_tok_s": {
+        "median": 203.53,
+        "p90": 208.17,
+        "peak": 208.17,
+        "min": 203.2,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 82.45,
+        "p90": 82.53,
+        "peak": 82.53,
+        "min": 53.26,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.25,
+        "p90": 0.48,
+        "peak": 0.48,
+        "min": 0.25,
+        "n": 3
+      },
+      "completion_tokens": 34,
+      "prompt_tokens": 175,
+      "spec": {}
+    },
+    "math": {
+      "decode_tok_s": {
+        "median": 106.61,
+        "p90": 106.67,
+        "peak": 106.67,
+        "min": 106.59,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 104.08,
+        "p90": 104.21,
+        "peak": 104.21,
+        "min": 100.12,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.12,
+        "p90": 0.29,
+        "peak": 0.29,
+        "min": 0.11,
+        "n": 3
+      },
+      "completion_tokens": 469,
+      "prompt_tokens": 75,
+      "spec": {}
+    },
+    "prose": {
+      "decode_tok_s": {
+        "median": 54.38,
+        "p90": 54.51,
+        "peak": 54.51,
+        "min": 54.23,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 53.69,
+        "p90": 53.79,
+        "peak": 53.79,
+        "min": 53.54,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.18,
+        "p90": 0.19,
+        "peak": 0.19,
+        "min": 0.18,
+        "n": 3
+      },
+      "completion_tokens": 700,
+      "prompt_tokens": 50,
+      "spec": {}
+    },
+    "narrative": {
+      "decode_tok_s": {
+        "median": 54.6,
+        "p90": 54.8,
+        "peak": 54.8,
+        "min": 54.53,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 53.93,
+        "p90": 54.13,
+        "peak": 54.13,
+        "min": 53.83,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.18,
+        "p90": 0.19,
+        "peak": 0.19,
+        "min": 0.18,
+        "n": 3
+      },
+      "completion_tokens": 712,
+      "prompt_tokens": 47,
+      "spec": {}
+    },
+    "summary": {
+      "decode_tok_s": {
+        "median": 63.59,
+        "p90": 63.71,
+        "peak": 63.71,
+        "min": 63.54,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 62.43,
+        "p90": 62.55,
+        "peak": 62.55,
+        "min": 62.39,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.17,
+        "p90": 0.17,
+        "peak": 0.17,
+        "min": 0.17,
+        "n": 3
+      },
+      "completion_tokens": 541,
+      "prompt_tokens": 39,
+      "spec": {}
+    },
+    "structured": {
+      "decode_tok_s": {
+        "median": 103.23,
+        "p90": 103.37,
+        "peak": 103.37,
+        "min": 103.07,
+        "n": 3
+      },
+      "e2e_tok_s": {
+        "median": 96.95,
+        "p90": 97.1,
+        "peak": 97.1,
+        "min": 88.66,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.13,
+        "p90": 0.31,
+        "peak": 0.31,
+        "min": 0.13,
+        "n": 3
+      },
+      "completion_tokens": 191,
+      "prompt_tokens": 84,
+      "spec": {}
+    }
+  },
+  "typesweep": {
+    "prose": {
+      "c1": {
+        "agg_tok_s": {
+          "median": 52.91,
+          "p90": 53.87,
+          "peak": 53.87,
+          "min": 50.45,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 53.85,
+          "p90": 54.83,
+          "peak": 54.83,
+          "min": 51.38,
+          "n": 3
+        },
+        "ttft_s": {
+          "median": 0.25,
+          "p90": 0.25,
+          "peak": 0.25,
+          "min": 0.25,
+          "n": 3
+        },
+        "prefill_tok_s": {
+          "median": 281.06,
+          "p90": 281.46,
+          "peak": 281.46,
+          "min": 276.26,
+          "n": 3
+        },
+        "fails": 0
+      },
+      "c2": {
+        "agg_tok_s": {
+          "median": 79.91,
+          "p90": 81.21,
+          "peak": 81.21,
+          "min": 78.84,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 41.18,
+          "p90": 42.2,
+          "peak": 42.2,
+          "min": 40.05,
+          "n": 6
+        },
+        "ttft_s": {
+          "median": 0.4,
+          "p90": 0.46,
+          "peak": 0.46,
+          "min": 0.3,
+          "n": 6
+        },
+        "prefill_tok_s": {
+          "median": 171.56,
+          "p90": 231.47,
+          "peak": 231.47,
+          "min": 151.57,
+          "n": 6
+        },
+        "fails": 0
+      },
+      "c3": {
+        "agg_tok_s": {
+          "median": 96.25,
+          "p90": 96.47,
+          "peak": 96.47,
+          "min": 88.42,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 34.01,
+          "p90": 34.94,
+          "peak": 34.94,
+          "min": 29.97,
+          "n": 9
+        },
+        "ttft_s": {
+          "median": 0.48,
+          "p90": 0.53,
+          "peak": 0.53,
+          "min": 0.42,
+          "n": 9
+        },
+        "prefill_tok_s": {
+          "median": 144.57,
+          "p90": 163.53,
+          "peak": 163.53,
+          "min": 130.45,
+          "n": 9
+        },
+        "fails": 0
+      },
+      "c4": {
+        "agg_tok_s": {
+          "median": 114.44,
+          "p90": 115.86,
+          "peak": 115.86,
+          "min": 105.55,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 29.22,
+          "p90": 29.79,
+          "peak": 29.81,
+          "min": 27.82,
+          "n": 12
+        },
+        "ttft_s": {
+          "median": 0.37,
+          "p90": 0.4,
+          "peak": 0.4,
+          "min": 0.34,
+          "n": 12
+        },
+        "prefill_tok_s": {
+          "median": 186.32,
+          "p90": 200.17,
+          "peak": 202.98,
+          "min": 172.45,
+          "n": 12
+        },
+        "fails": 0
+      },
+      "c5": {
+        "agg_tok_s": {
+          "median": 124.89,
+          "p90": 126.56,
+          "peak": 126.56,
+          "min": 117.39,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 25.77,
+          "p90": 26.41,
+          "peak": 26.7,
+          "min": 24.11,
+          "n": 15
+        },
+        "ttft_s": {
+          "median": 0.38,
+          "p90": 0.45,
+          "peak": 0.45,
+          "min": 0.38,
+          "n": 15
+        },
+        "prefill_tok_s": {
+          "median": 179.42,
+          "p90": 181.19,
+          "peak": 181.56,
+          "min": 155.26,
+          "n": 15
+        },
+        "fails": 0
+      },
+      "c6": {
+        "agg_tok_s": {
+          "median": 131.94,
+          "p90": 134.04,
+          "peak": 134.04,
+          "min": 126.07,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 23.19,
+          "p90": 23.92,
+          "peak": 24.45,
+          "min": 22.39,
+          "n": 18
+        },
+        "ttft_s": {
+          "median": 0.48,
+          "p90": 0.58,
+          "peak": 0.64,
+          "min": 0.42,
+          "n": 18
+        },
+        "prefill_tok_s": {
+          "median": 146.68,
+          "p90": 168.24,
+          "peak": 168.35,
+          "min": 107.09,
+          "n": 18
+        },
+        "fails": 0
+      }
+    },
+    "code": {
+      "c1": {
+        "agg_tok_s": {
+          "median": 100.02,
+          "p90": 105.08,
+          "peak": 105.08,
+          "min": 99.45,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 104.53,
+          "p90": 110.01,
+          "peak": 110.01,
+          "min": 103.95,
+          "n": 3
+        },
+        "ttft_s": {
+          "median": 0.31,
+          "p90": 0.31,
+          "peak": 0.31,
+          "min": 0.31,
+          "n": 3
+        },
+        "prefill_tok_s": {
+          "median": 245.36,
+          "p90": 247.39,
+          "peak": 247.39,
+          "min": 243.95,
+          "n": 3
+        },
+        "fails": 0
+      },
+      "c2": {
+        "agg_tok_s": {
+          "median": 142.81,
+          "p90": 143.71,
+          "peak": 143.71,
+          "min": 141.83,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 76.52,
+          "p90": 79.04,
+          "peak": 79.04,
+          "min": 73.99,
+          "n": 6
+        },
+        "ttft_s": {
+          "median": 0.52,
+          "p90": 0.52,
+          "peak": 0.52,
+          "min": 0.36,
+          "n": 6
+        },
+        "prefill_tok_s": {
+          "median": 148.04,
+          "p90": 216.61,
+          "peak": 216.61,
+          "min": 146.77,
+          "n": 6
+        },
+        "fails": 0
+      },
+      "c3": {
+        "agg_tok_s": {
+          "median": 175.9,
+          "p90": 177.78,
+          "peak": 177.78,
+          "min": 166.77,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 63.72,
+          "p90": 64.43,
+          "peak": 64.43,
+          "min": 58.08,
+          "n": 9
+        },
+        "ttft_s": {
+          "median": 0.4,
+          "p90": 0.56,
+          "peak": 0.56,
+          "min": 0.4,
+          "n": 9
+        },
+        "prefill_tok_s": {
+          "median": 190.55,
+          "p90": 191.05,
+          "peak": 191.05,
+          "min": 136.72,
+          "n": 9
+        },
+        "fails": 0
+      },
+      "c4": {
+        "agg_tok_s": {
+          "median": 189.02,
+          "p90": 193.49,
+          "peak": 193.49,
+          "min": 184.77,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 50.41,
+          "p90": 54.32,
+          "peak": 54.51,
+          "min": 48.01,
+          "n": 12
+        },
+        "ttft_s": {
+          "median": 0.44,
+          "p90": 0.59,
+          "peak": 0.59,
+          "min": 0.44,
+          "n": 12
+        },
+        "prefill_tok_s": {
+          "median": 173.16,
+          "p90": 175.5,
+          "peak": 175.54,
+          "min": 127.79,
+          "n": 12
+        },
+        "fails": 0
+      },
+      "c5": {
+        "agg_tok_s": {
+          "median": 216.74,
+          "p90": 218.28,
+          "peak": 218.28,
+          "min": 211.22,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 45.28,
+          "p90": 49.43,
+          "peak": 50.16,
+          "min": 43.92,
+          "n": 15
+        },
+        "ttft_s": {
+          "median": 0.52,
+          "p90": 0.66,
+          "peak": 0.66,
+          "min": 0.48,
+          "n": 15
+        },
+        "prefill_tok_s": {
+          "median": 148.69,
+          "p90": 157.38,
+          "peak": 157.45,
+          "min": 117.55,
+          "n": 15
+        },
+        "fails": 0
+      },
+      "c6": {
+        "agg_tok_s": {
+          "median": 229.49,
+          "p90": 231.84,
+          "peak": 231.84,
+          "min": 228.54,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 40.73,
+          "p90": 44.68,
+          "peak": 46.21,
+          "min": 39.2,
+          "n": 18
+        },
+        "ttft_s": {
+          "median": 0.55,
+          "p90": 0.56,
+          "peak": 0.56,
+          "min": 0.48,
+          "n": 18
+        },
+        "prefill_tok_s": {
+          "median": 139.54,
+          "p90": 140.9,
+          "peak": 160.97,
+          "min": 138.08,
+          "n": 18
+        },
+        "fails": 0
+      }
+    },
+    "math": {
+      "c1": {
+        "agg_tok_s": {
+          "median": 95.75,
+          "p90": 98.24,
+          "peak": 98.24,
+          "min": 89.34,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 102.15,
+          "p90": 105.55,
+          "peak": 105.55,
+          "min": 96.59,
+          "n": 3
+        },
+        "ttft_s": {
+          "median": 0.34,
+          "p90": 0.35,
+          "peak": 0.35,
+          "min": 0.34,
+          "n": 3
+        },
+        "prefill_tok_s": {
+          "median": 276.07,
+          "p90": 277.89,
+          "peak": 277.89,
+          "min": 272.08,
+          "n": 3
+        },
+        "fails": 0
+      },
+      "c2": {
+        "agg_tok_s": {
+          "median": 139.27,
+          "p90": 150.91,
+          "peak": 150.91,
+          "min": 126.99,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 76.85,
+          "p90": 82.2,
+          "peak": 82.2,
+          "min": 71.85,
+          "n": 6
+        },
+        "ttft_s": {
+          "median": 0.48,
+          "p90": 0.57,
+          "peak": 0.57,
+          "min": 0.35,
+          "n": 6
+        },
+        "prefill_tok_s": {
+          "median": 202.04,
+          "p90": 274.05,
+          "peak": 274.05,
+          "min": 166.83,
+          "n": 6
+        },
+        "fails": 0
+      },
+      "c3": {
+        "agg_tok_s": {
+          "median": 166.29,
+          "p90": 172.8,
+          "peak": 172.8,
+          "min": 165.77,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 61.77,
+          "p90": 69.21,
+          "peak": 69.21,
+          "min": 59.66,
+          "n": 9
+        },
+        "ttft_s": {
+          "median": 0.62,
+          "p90": 0.63,
+          "peak": 0.63,
+          "min": 0.41,
+          "n": 9
+        },
+        "prefill_tok_s": {
+          "median": 152.07,
+          "p90": 230.24,
+          "peak": 230.24,
+          "min": 149.0,
+          "n": 9
+        },
+        "fails": 0
+      },
+      "c4": {
+        "agg_tok_s": {
+          "median": 192.59,
+          "p90": 192.95,
+          "peak": 192.95,
+          "min": 191.86,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 53.27,
+          "p90": 57.28,
+          "peak": 59.96,
+          "min": 50.76,
+          "n": 12
+        },
+        "ttft_s": {
+          "median": 0.64,
+          "p90": 0.69,
+          "peak": 0.69,
+          "min": 0.44,
+          "n": 12
+        },
+        "prefill_tok_s": {
+          "median": 148.41,
+          "p90": 186.31,
+          "peak": 214.64,
+          "min": 136.11,
+          "n": 12
+        },
+        "fails": 0
+      },
+      "c5": {
+        "agg_tok_s": {
+          "median": 206.35,
+          "p90": 210.04,
+          "peak": 210.04,
+          "min": 202.46,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 48.3,
+          "p90": 49.58,
+          "peak": 50.52,
+          "min": 43.16,
+          "n": 15
+        },
+        "ttft_s": {
+          "median": 0.57,
+          "p90": 0.59,
+          "peak": 0.59,
+          "min": 0.49,
+          "n": 15
+        },
+        "prefill_tok_s": {
+          "median": 165.75,
+          "p90": 192.14,
+          "peak": 192.76,
+          "min": 162.17,
+          "n": 15
+        },
+        "fails": 0
+      },
+      "c6": {
+        "agg_tok_s": {
+          "median": 228.58,
+          "p90": 228.83,
+          "peak": 228.83,
+          "min": 218.08,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 42.74,
+          "p90": 45.23,
+          "peak": 45.94,
+          "min": 38.53,
+          "n": 18
+        },
+        "ttft_s": {
+          "median": 0.8,
+          "p90": 0.82,
+          "peak": 0.82,
+          "min": 0.5,
+          "n": 18
+        },
+        "prefill_tok_s": {
+          "median": 118.09,
+          "p90": 184.94,
+          "peak": 188.27,
+          "min": 115.98,
+          "n": 18
+        },
+        "fails": 0
+      }
+    },
+    "json": {
+      "c1": {
+        "agg_tok_s": {
+          "median": 102.0,
+          "p90": 102.07,
+          "peak": 102.07,
+          "min": 101.18,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 106.87,
+          "p90": 107.53,
+          "peak": 107.53,
+          "min": 106.55,
+          "n": 3
+        },
+        "ttft_s": {
+          "median": 0.35,
+          "p90": 0.35,
+          "peak": 0.35,
+          "min": 0.32,
+          "n": 3
+        },
+        "prefill_tok_s": {
+          "median": 283.93,
+          "p90": 312.08,
+          "peak": 312.08,
+          "min": 283.43,
+          "n": 3
+        },
+        "fails": 0
+      },
+      "c2": {
+        "agg_tok_s": {
+          "median": 153.33,
+          "p90": 154.06,
+          "peak": 154.06,
+          "min": 150.36,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 80.72,
+          "p90": 82.69,
+          "peak": 82.69,
+          "min": 78.88,
+          "n": 6
+        },
+        "ttft_s": {
+          "median": 0.44,
+          "p90": 0.44,
+          "peak": 0.44,
+          "min": 0.44,
+          "n": 6
+        },
+        "prefill_tok_s": {
+          "median": 231.22,
+          "p90": 231.87,
+          "peak": 231.87,
+          "min": 229.51,
+          "n": 6
+        },
+        "fails": 0
+      },
+      "c3": {
+        "agg_tok_s": {
+          "median": 189.91,
+          "p90": 197.94,
+          "peak": 197.94,
+          "min": 176.95,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 67.89,
+          "p90": 70.76,
+          "peak": 70.76,
+          "min": 62.34,
+          "n": 9
+        },
+        "ttft_s": {
+          "median": 0.66,
+          "p90": 0.67,
+          "peak": 0.67,
+          "min": 0.48,
+          "n": 9
+        },
+        "prefill_tok_s": {
+          "median": 152.41,
+          "p90": 211.16,
+          "peak": 211.16,
+          "min": 151.74,
+          "n": 9
+        },
+        "fails": 0
+      },
+      "c4": {
+        "agg_tok_s": {
+          "median": 211.55,
+          "p90": 226.37,
+          "peak": 226.37,
+          "min": 211.39,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 58.39,
+          "p90": 59.92,
+          "peak": 60.46,
+          "min": 51.97,
+          "n": 12
+        },
+        "ttft_s": {
+          "median": 0.53,
+          "p90": 0.71,
+          "peak": 0.71,
+          "min": 0.47,
+          "n": 12
+        },
+        "prefill_tok_s": {
+          "median": 191.04,
+          "p90": 192.37,
+          "peak": 210.78,
+          "min": 141.83,
+          "n": 12
+        },
+        "fails": 0
+      },
+      "c5": {
+        "agg_tok_s": {
+          "median": 242.24,
+          "p90": 258.74,
+          "peak": 258.74,
+          "min": 240.04,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 52.95,
+          "p90": 54.38,
+          "peak": 54.79,
+          "min": 46.99,
+          "n": 15
+        },
+        "ttft_s": {
+          "median": 0.58,
+          "p90": 0.58,
+          "peak": 0.58,
+          "min": 0.52,
+          "n": 15
+        },
+        "prefill_tok_s": {
+          "median": 174.4,
+          "p90": 193.62,
+          "peak": 194.06,
+          "min": 171.73,
+          "n": 15
+        },
+        "fails": 0
+      },
+      "c6": {
+        "agg_tok_s": {
+          "median": 265.91,
+          "p90": 281.89,
+          "peak": 281.89,
+          "min": 245.37,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 47.37,
+          "p90": 49.5,
+          "peak": 57.04,
+          "min": 41.84,
+          "n": 18
+        },
+        "ttft_s": {
+          "median": 0.62,
+          "p90": 0.62,
+          "peak": 0.62,
+          "min": 0.56,
+          "n": 18
+        },
+        "prefill_tok_s": {
+          "median": 163.46,
+          "p90": 179.57,
+          "peak": 180.44,
+          "min": 160.56,
+          "n": 18
+        },
+        "fails": 0
+      }
+    },
+    "count100": {
+      "c1": {
+        "agg_tok_s": {
+          "median": 133.29,
+          "p90": 137.37,
+          "peak": 137.37,
+          "min": 132.18,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 146.06,
+          "p90": 156.22,
+          "peak": 156.22,
+          "min": 144.99,
+          "n": 3
+        },
+        "ttft_s": {
+          "median": 0.14,
+          "p90": 0.18,
+          "peak": 0.18,
+          "min": 0.14,
+          "n": 3
+        },
+        "prefill_tok_s": {
+          "median": 351.73,
+          "p90": 362.0,
+          "peak": 362.0,
+          "min": 284.74,
+          "n": 3
+        },
+        "fails": 0
+      },
+      "c2": {
+        "agg_tok_s": {
+          "median": 194.87,
+          "p90": 210.76,
+          "peak": 210.76,
+          "min": 182.75,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 110.06,
+          "p90": 123.01,
+          "peak": 123.01,
+          "min": 100.08,
+          "n": 6
+        },
+        "ttft_s": {
+          "median": 0.24,
+          "p90": 0.33,
+          "peak": 0.33,
+          "min": 0.15,
+          "n": 6
+        },
+        "prefill_tok_s": {
+          "median": 215.6,
+          "p90": 354.34,
+          "peak": 354.34,
+          "min": 158.88,
+          "n": 6
+        },
+        "fails": 0
+      },
+      "c3": {
+        "agg_tok_s": {
+          "median": 252.41,
+          "p90": 254.93,
+          "peak": 254.93,
+          "min": 248.81,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 96.0,
+          "p90": 98.85,
+          "peak": 98.85,
+          "min": 91.22,
+          "n": 9
+        },
+        "ttft_s": {
+          "median": 0.23,
+          "p90": 0.28,
+          "peak": 0.28,
+          "min": 0.22,
+          "n": 9
+        },
+        "prefill_tok_s": {
+          "median": 227.75,
+          "p90": 235.72,
+          "peak": 235.72,
+          "min": 183.22,
+          "n": 9
+        },
+        "fails": 0
+      },
+      "c4": {
+        "agg_tok_s": {
+          "median": 298.16,
+          "p90": 313.25,
+          "peak": 313.25,
+          "min": 293.61,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 89.01,
+          "p90": 93.36,
+          "peak": 93.41,
+          "min": 80.4,
+          "n": 12
+        },
+        "ttft_s": {
+          "median": 0.42,
+          "p90": 0.43,
+          "peak": 0.43,
+          "min": 0.15,
+          "n": 12
+        },
+        "prefill_tok_s": {
+          "median": 125.44,
+          "p90": 215.42,
+          "peak": 343.84,
+          "min": 122.55,
+          "n": 12
+        },
+        "fails": 0
+      },
+      "c5": {
+        "agg_tok_s": {
+          "median": 333.04,
+          "p90": 339.47,
+          "peak": 339.47,
+          "min": 306.71,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 76.41,
+          "p90": 82.33,
+          "peak": 82.35,
+          "min": 66.8,
+          "n": 15
+        },
+        "ttft_s": {
+          "median": 0.48,
+          "p90": 0.49,
+          "peak": 0.49,
+          "min": 0.23,
+          "n": 15
+        },
+        "prefill_tok_s": {
+          "median": 108.51,
+          "p90": 233.06,
+          "peak": 233.24,
+          "min": 104.39,
+          "n": 15
+        },
+        "fails": 0
+      },
+      "c6": {
+        "agg_tok_s": {
+          "median": 365.67,
+          "p90": 390.85,
+          "peak": 390.85,
+          "min": 337.6,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 69.5,
+          "p90": 74.84,
+          "peak": 74.86,
+          "min": 65.58,
+          "n": 18
+        },
+        "ttft_s": {
+          "median": 0.36,
+          "p90": 0.58,
+          "peak": 0.58,
+          "min": 0.3,
+          "n": 18
+        },
+        "prefill_tok_s": {
+          "median": 147.23,
+          "p90": 175.75,
+          "peak": 177.01,
+          "min": 92.02,
+          "n": 18
+        },
+        "fails": 0
+      }
+    },
+    "structured": {
+      "c1": {
+        "agg_tok_s": {
+          "median": 85.14,
+          "p90": 87.45,
+          "peak": 87.45,
+          "min": 83.31,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 100.03,
+          "p90": 106.3,
+          "peak": 106.3,
+          "min": 97.75,
+          "n": 3
+        },
+        "ttft_s": {
+          "median": 0.35,
+          "p90": 0.36,
+          "peak": 0.36,
+          "min": 0.31,
+          "n": 3
+        },
+        "prefill_tok_s": {
+          "median": 292.43,
+          "p90": 328.09,
+          "peak": 328.09,
+          "min": 284.87,
+          "n": 3
+        },
+        "fails": 0
+      },
+      "c2": {
+        "agg_tok_s": {
+          "median": 131.45,
+          "p90": 145.39,
+          "peak": 145.39,
+          "min": 118.8,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 81.34,
+          "p90": 86.43,
+          "peak": 86.43,
+          "min": 72.23,
+          "n": 6
+        },
+        "ttft_s": {
+          "median": 0.44,
+          "p90": 0.58,
+          "peak": 0.58,
+          "min": 0.43,
+          "n": 6
+        },
+        "prefill_tok_s": {
+          "median": 234.4,
+          "p90": 240.69,
+          "peak": 240.69,
+          "min": 179.63,
+          "n": 6
+        },
+        "fails": 0
+      },
+      "c3": {
+        "agg_tok_s": {
+          "median": 163.44,
+          "p90": 169.27,
+          "peak": 169.27,
+          "min": 147.53,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 63.48,
+          "p90": 69.2,
+          "peak": 69.2,
+          "min": 57.42,
+          "n": 9
+        },
+        "ttft_s": {
+          "median": 0.48,
+          "p90": 0.49,
+          "peak": 0.49,
+          "min": 0.44,
+          "n": 9
+        },
+        "prefill_tok_s": {
+          "median": 217.42,
+          "p90": 237.86,
+          "peak": 237.86,
+          "min": 211.19,
+          "n": 9
+        },
+        "fails": 0
+      },
+      "c4": {
+        "agg_tok_s": {
+          "median": 174.53,
+          "p90": 188.74,
+          "peak": 188.74,
+          "min": 169.81,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 55.32,
+          "p90": 59.58,
+          "peak": 61.29,
+          "min": 50.18,
+          "n": 12
+        },
+        "ttft_s": {
+          "median": 0.66,
+          "p90": 0.7,
+          "peak": 0.71,
+          "min": 0.46,
+          "n": 12
+        },
+        "prefill_tok_s": {
+          "median": 157.69,
+          "p90": 206.37,
+          "peak": 224.33,
+          "min": 145.46,
+          "n": 12
+        },
+        "fails": 0
+      },
+      "c5": {
+        "agg_tok_s": {
+          "median": 214.81,
+          "p90": 217.91,
+          "peak": 217.91,
+          "min": 198.39,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 51.71,
+          "p90": 55.27,
+          "peak": 55.27,
+          "min": 48.25,
+          "n": 15
+        },
+        "ttft_s": {
+          "median": 0.58,
+          "p90": 0.76,
+          "peak": 0.76,
+          "min": 0.52,
+          "n": 15
+        },
+        "prefill_tok_s": {
+          "median": 179.74,
+          "p90": 199.29,
+          "peak": 200.26,
+          "min": 135.21,
+          "n": 15
+        },
+        "fails": 0
+      },
+      "c6": {
+        "agg_tok_s": {
+          "median": 237.5,
+          "p90": 242.53,
+          "peak": 242.53,
+          "min": 223.41,
+          "n": 3
+        },
+        "per_stream_decode": {
+          "median": 47.69,
+          "p90": 50.32,
+          "peak": 52.82,
+          "min": 44.75,
+          "n": 18
+        },
+        "ttft_s": {
+          "median": 0.62,
+          "p90": 0.87,
+          "peak": 0.87,
+          "min": 0.61,
+          "n": 18
+        },
+        "prefill_tok_s": {
+          "median": 167.81,
+          "p90": 170.32,
+          "peak": 170.34,
+          "min": 119.08,
+          "n": 18
+        },
+        "fails": 0
+      }
+    }
+  },
+  "sweep": {
+    "c1": {
+      "agg_tok_s": {
+        "median": 99.94,
+        "p90": 103.24,
+        "peak": 103.24,
+        "min": 83.33,
+        "n": 3
+      },
+      "per_stream_decode": {
+        "median": 102.85,
+        "p90": 108.33,
+        "peak": 108.33,
+        "min": 86.84,
+        "n": 3
+      },
+      "ttft_s": {
+        "median": 0.27,
+        "p90": 0.32,
+        "peak": 0.32,
+        "min": 0.21,
+        "n": 3
+      },
+      "fails": 0,
+      "spec": {},
+      "preemptions": 0
+    },
+    "c2": {
+      "agg_tok_s": {
+        "median": 84.86,
+        "p90": 134.1,
+        "peak": 134.1,
+        "min": 77.15,
+        "n": 3
+      },
+      "per_stream_decode": {
+        "median": 75.27,
+        "p90": 162.43,
+        "peak": 162.43,
+        "min": 43.82,
+        "n": 6
+      },
+      "ttft_s": {
+        "median": 0.42,
+        "p90": 0.54,
+        "peak": 0.54,
+        "min": 0.26,
+        "n": 6
+      },
+      "fails": 0,
+      "spec": {},
+      "preemptions": 0
+    },
+    "c3": {
+      "agg_tok_s": {
+        "median": 100.6,
+        "p90": 151.87,
+        "peak": 151.87,
+        "min": 70.61,
+        "n": 3
+      },
+      "per_stream_decode": {
+        "median": 56.08,
+        "p90": 137.82,
+        "peak": 137.82,
+        "min": 36.19,
+        "n": 9
+      },
+      "ttft_s": {
+        "median": 0.43,
+        "p90": 0.59,
+        "peak": 0.59,
+        "min": 0.34,
+        "n": 9
+      },
+      "fails": 0,
+      "spec": {},
+      "preemptions": 0
+    },
+    "c4": {
+      "agg_tok_s": {
+        "median": 154.69,
+        "p90": 155.81,
+        "peak": 155.81,
+        "min": 107.88,
+        "n": 3
+      },
+      "per_stream_decode": {
+        "median": 56.03,
+        "p90": 110.22,
+        "peak": 111.88,
+        "min": 30.22,
+        "n": 12
+      },
+      "ttft_s": {
+        "median": 0.36,
+        "p90": 0.46,
+        "peak": 0.46,
+        "min": 0.28,
+        "n": 12
+      },
+      "fails": 0,
+      "spec": {},
+      "preemptions": 0
+    },
+    "c5": {
+      "agg_tok_s": {
+        "median": 125.81,
+        "p90": 166.54,
+        "peak": 166.54,
+        "min": 107.77,
+        "n": 3
+      },
+      "per_stream_decode": {
+        "median": 47.67,
+        "p90": 98.27,
+        "peak": 113.69,
+        "min": 26.53,
+        "n": 15
+      },
+      "ttft_s": {
+        "median": 0.49,
+        "p90": 0.77,
+        "peak": 0.77,
+        "min": 0.32,
+        "n": 15
+      },
+      "fails": 0,
+      "spec": {},
+      "preemptions": 0
+    },
+    "c6": {
+      "agg_tok_s": {
+        "median": 134.41,
+        "p90": 136.03,
+        "peak": 136.03,
+        "min": 130.13,
+        "n": 3
+      },
+      "per_stream_decode": {
+        "median": 40.35,
+        "p90": 94.29,
+        "peak": 95.63,
+        "min": 24.33,
+        "n": 18
+      },
+      "ttft_s": {
+        "median": 0.59,
+        "p90": 0.71,
+        "peak": 0.77,
+        "min": 0.31,
+        "n": 18
+      },
+      "fails": 0,
+      "spec": {},
+      "preemptions": 0
+    }
+  },
+  "prefill": {
+    "2048": {
+      "prompt_tokens": 5943,
+      "ttft_s": 3.549,
+      "prefill_tok_s": 1674.7
+    },
+    "8192": {
+      "prompt_tokens": 29867,
+      "ttft_s": 15.053,
+      "prefill_tok_s": 1984.1
+    },
+    "32768": {
+      "prompt_tokens": 113911,
+      "ttft_s": 55.901,
+      "prefill_tok_s": 2037.7
+    },
+    "131072": {
+      "prompt_tokens": 498635,
+      "ttft_s": 258.681,
+      "prefill_tok_s": 1927.6
+    }
+  },
+  "meta_end": {
+    "preemptions_total": 0
+  },
+  "finished": "2026-10-11 22:51:59"
+}

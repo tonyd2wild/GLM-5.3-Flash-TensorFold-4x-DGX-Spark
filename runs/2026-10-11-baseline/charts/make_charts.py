@@ -42,16 +42,16 @@ def legend(x, y, t, items):
     return out
 
 def decode_multiples(d, t):
-    types = d["types"]; levels = d["levels"]; W, H = 900, 356
+    types = d["types"]; levels = d["levels"]; rows = -(-len(types) // 3); rowh = 278; W, H = 900, 78 + rowh * rows
     pw, ph, top, left, gap = 216, 200, 78, 52, 80
     o = svg_open(W, H, t, d["title"])
     o.append(text(24, 30, d["title"], t, 16, t["ink"], weight="600"))
     o += legend(24, 56, t, [(d["new_label"], t["s1"]), (d["old_label"], t["s2"])])
     for i, ty in enumerate(types):
-        x0 = left + i * (pw + gap); y0 = top + 18
+        x0 = left + (i % 3) * (pw + gap); y0 = top + 18 + (i // 3) * rowh
         new = d["new"][ty]; old = d["old"][ty]
         ymax, nt = nice_max(max(new + old) * 1.05)
-        o.append(text(x0, top + 6, ty, t, 13, t["ink"], weight="600"))
+        o.append(text(x0, y0 - 12, ty, t, 13, t["ink"], weight="600"))
         ticks(o, t, x0, x0 + pw, y0, ph, ymax, nt)
         xs = [x0 + pw * j / (len(levels) - 1) for j in range(len(levels))]
         for j, lv in enumerate(levels):

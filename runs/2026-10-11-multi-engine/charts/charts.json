@@ -1,0 +1,230 @@
+{
+ "tfm-single-vs-vllm": {
+  "kind": "prefill",
+  "title": "Single stream: decode tok/s by prompt (median of 3)",
+  "cats": [
+   "count 100",
+   "count 300",
+   "code",
+   "json",
+   "sql",
+   "tool call",
+   "math",
+   "summary",
+   "prose",
+   "narrative"
+  ],
+  "new": [
+   149.91,
+   141.79,
+   108.95,
+   113.02,
+   83.37,
+   82.45,
+   106.61,
+   63.59,
+   54.38,
+   54.6
+  ],
+  "old": [
+   181.72,
+   165.65,
+   120.52,
+   120.54,
+   109.14,
+   67.92,
+   141.78,
+   70.59,
+   60.98,
+   60.83
+  ],
+  "new_label": "TensorFold multi-stream engine",
+  "old_label": "vLLM knapcio stack (reference)",
+  "note": "4x DGX Spark TP4, derisked lossless8 weights over NFS, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tfm-sweep-vs-vllm": {
+  "kind": "sweep",
+  "title": "Mixed real prompts, C1-C6: aggregate tok/s (median of 3 rounds)",
+  "x": [
+   "C1",
+   "C2",
+   "C3",
+   "C4",
+   "C5",
+   "C6"
+  ],
+  "series": [
+   [
+    "TensorFold multi-stream engine",
+    [
+     99.94,
+     84.86,
+     100.6,
+     154.69,
+     125.81,
+     134.41
+    ]
+   ],
+   [
+    "vLLM knapcio stack (reference)",
+    [
+     115.39,
+     103.36,
+     104.51,
+     159.89,
+     134.51,
+     141.17
+    ]
+   ]
+  ],
+  "note": "4x DGX Spark TP4, derisked lossless8 weights over NFS, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tfm-types-vs-single": {
+  "kind": "decode",
+  "title": "C1-C6 by prompt type: aggregate tok/s, multi-stream vs one at a time",
+  "types": [
+   "prose",
+   "code",
+   "math",
+   "json",
+   "count 100",
+   "YAML"
+  ],
+  "levels": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "new": {
+   "prose": [
+    52.91,
+    79.91,
+    96.25,
+    114.44,
+    124.89,
+    131.94
+   ],
+   "code": [
+    100.02,
+    142.81,
+    175.9,
+    189.02,
+    216.74,
+    229.49
+   ],
+   "math": [
+    95.75,
+    139.27,
+    166.29,
+    192.59,
+    206.35,
+    228.58
+   ],
+   "json": [
+    102.0,
+    153.33,
+    189.91,
+    211.55,
+    242.24,
+    265.91
+   ],
+   "count 100": [
+    133.29,
+    194.87,
+    252.41,
+    298.16,
+    333.04,
+    365.67
+   ],
+   "YAML": [
+    85.14,
+    131.45,
+    163.44,
+    174.53,
+    214.81,
+    237.5
+   ]
+  },
+  "old": {
+   "prose": [
+    45.62,
+    45.25,
+    45.98,
+    46.01,
+    45.28,
+    44.95
+   ],
+   "code": [
+    77.32,
+    78.92,
+    79.12,
+    79.19,
+    80.17,
+    78.87
+   ],
+   "math": [
+    81.46,
+    77.55,
+    79.44,
+    78.18,
+    78.42,
+    78.96
+   ],
+   "json": [
+    80.95,
+    80.32,
+    81.52,
+    79.72,
+    80.28,
+    78.79
+   ],
+   "count 100": [
+    96.13,
+    95.01,
+    95.22,
+    95.55,
+    95.54,
+    95.41
+   ],
+   "YAML": [
+    71.61,
+    68.51,
+    64.83,
+    67.38,
+    68.39,
+    67.43
+   ]
+  },
+  "new_label": "multi-stream engine (8 slots)",
+  "old_label": "our one-at-a-time build",
+  "note": "4x DGX Spark TP4, derisked lossless8 weights over NFS, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tfm-prefill-vs-vllm": {
+  "kind": "prefill",
+  "title": "Cold prefill, tok/s",
+  "cats": [
+   "5K",
+   "29K",
+   "113K",
+   "498K"
+  ],
+  "new": [
+   1674.7,
+   1984.1,
+   2037.7,
+   1927.6
+  ],
+  "old": [
+   2378.1,
+   2797.6,
+   2794.2,
+   2461.5
+  ],
+  "new_label": "TensorFold multi-stream engine",
+  "old_label": "vLLM knapcio stack (reference)",
+  "note": "salted prompts, one output token"
+ }
+}
