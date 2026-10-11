@@ -21,6 +21,7 @@ VISION=${VISION:-1}
 DRAFTS=${DRAFTS:-auto}                           # none | mtp | auto (MTP and DFlash2, the engine picks each round)
 DRAFTER=${DRAFTER:-/mnt/reddie-models/GLM-5.3-Flash-DFlash2}   # incoai's DFlash2, read over NFS like the weights
 EXTRA=${EXTRA:-}
+EXTRA_ENV=${EXTRA_ENV:-}                         # more container env, e.g. "NCCL_PROTO=LL NCCL_MAX_NCHANNELS=8"
 # the image's CUDA toolkit lacks the cuSPARSE/cuSOLVER headers torch's CUDAContext includes; torch's pip bundle has them
 CUDA_PIP_INC=/cache/cuda_extra_inc     # only the headers the toolkit lacks, copied from torch's pip bundle (nvidia/cu13/include)
 MASTER=192.168.192.2
@@ -45,7 +46,8 @@ serve_args() {  # serve_args <rank>
 
 start_rank() {
   local r=$1
-  local model_real drafter_mount=""
+  local model_real drafter_mount="" envs=""
+  for kv in $EXTRA_ENV; do envs+=" -e $kv"; done
   model_real=$(run "$r" "readlink -f $MODEL")
   [[ $DRAFTS == auto ]] && drafter_mount="-v $(run "$r" "readlink -f $DRAFTER"):/drafter:ro"
   run "$r" "mkdir -p $CACHE/torch_ext $CACHE/triton $CACHE/home && docker rm -f $NAME-r$r >/dev/null 2>&1; \
@@ -55,7 +57,7 @@ start_rank() {
       -e NCCL_CUMEM_ENABLE=0 -e NCCL_CROSS_NIC=0 -e NCCL_IB_DISABLE=0 -e NCCL_IB_HCA==rocep1s0f0 \
       -e NCCL_IB_GID_INDEX=3 -e NCCL_NET=IB -e NCCL_IB_MERGE_NICS=0 -e NCCL_IB_ROCE_VERSION_NUM=2 \
       -e NCCL_NVLS_ENABLE=0 -e NCCL_SOCKET_IFNAME==enp1s0f0np0 -e GLOO_SOCKET_IFNAME=enp1s0f0np0 \
-      -e NCCL_NET_PLUGIN=none -e NCCL_DEBUG=WARN \
+      -e NCCL_NET_PLUGIN=none -e NCCL_DEBUG=WARN $envs \
       -e MAX_JOBS=2 -e TORCH_EXTENSIONS_DIR=/cache/torch_ext -e TRITON_CACHE_DIR=/cache/triton -e HOME=/cache/home \
       -e NVCC_APPEND_FLAGS=-I$CUDA_PIP_INC -e CPATH=$CUDA_PIP_INC \
       -e PYTHONPATH=/tf/src -e PYTHONUNBUFFERED=1 \
