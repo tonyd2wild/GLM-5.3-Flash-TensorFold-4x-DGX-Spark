@@ -1,0 +1,96 @@
+{
+ "tf-suite": {
+  "kind": "suite",
+  "title": "GLM-5.3-Flash on TensorFold TP4: single-stream decode by prompt",
+  "sub": "tok/s, median of 3, temperature 0, reasoning_effort low, MTP + DFlash2 drafts",
+  "cats": [
+   "count to 100",
+   "count to 300",
+   "code",
+   "json",
+   "sql",
+   "tool call",
+   "math",
+   "structured (YAML)",
+   "summary",
+   "prose",
+   "narrative"
+  ],
+  "vals": [
+   110.62,
+   106.26,
+   80.58,
+   81.36,
+   64.93,
+   82.73,
+   78.23,
+   74.92,
+   55.66,
+   46.79,
+   45.69
+  ],
+  "note": "4x DGX Spark, derisked lossless8 weights over NFS from Reddie, 500K context, 2026-10-11"
+ },
+ "tf-sweep-vs-vllm": {
+  "kind": "sweep",
+  "title": "Mixed real prompts, C1-C6: aggregate tok/s (median of 3 rounds)",
+  "x": [
+   "C1",
+   "C2",
+   "C3",
+   "C4",
+   "C5",
+   "C6"
+  ],
+  "series": [
+   [
+    "TensorFold TP4 (one request at a time)",
+    [
+     74.62,
+     67.16,
+     56.06,
+     74.46,
+     57.31,
+     61.06
+    ]
+   ],
+   [
+    "vLLM knapcio stack (reference)",
+    [
+     115.39,
+     103.36,
+     104.51,
+     159.89,
+     134.51,
+     141.17
+    ]
+   ]
+  ],
+  "note": "TensorFold's GLM CUDA engine serves one request at a time today; vLLM batches"
+ },
+ "tf-prefill-vs-vllm": {
+  "kind": "prefill",
+  "title": "Cold prefill, tok/s",
+  "cats": [
+   "5K",
+   "29K",
+   "113K",
+   "498K"
+  ],
+  "new": [
+   863.6,
+   894.1,
+   887.0,
+   772.4
+  ],
+  "old": [
+   2378.1,
+   2797.6,
+   2794.2,
+   2461.5
+  ],
+  "new_label": "TensorFold TP4",
+  "old_label": "vLLM knapcio stack (reference)",
+  "note": "salted prompts, one output token"
+ }
+}

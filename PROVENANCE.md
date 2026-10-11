@@ -32,6 +32,10 @@ license file and every mention of them. Commits authored by others are kept.
 
 | part | written from | license of the reference |
 |---|---|---|
+| `families/glm5_next/cuda/modelopt.py` (ModelOpt checkpoint reader: NVFP4 experts, MXFP8 / FP8-block / BF16 linears) | the engine's own NVFP4 module API; the checkpoint's tensor layout | ours, on Apache-2.0 code |
+| `vision/glm_cuda.py` (vision tower, processor, prompt expansion) | vLLM `models/glm5next/nvidia/multimodal.py` and `transformers_utils/processors/glm5next.py` | Apache-2.0 (vLLM contributors) |
+| engine wiring: TP4 rank checks, image rows across ranks, NVFP4 MoE dispatch, 8-bit linears, index-aware capacity scan, split rules for scalars / FP8 / pack markers | ours | ours, on Apache-2.0 code |
+| `deploy/tf_tp4.sh` | ours (fleet NCCL / RoCE settings from our live deployment) | ours |
 | benchmark harness `bench/bench_tp2_night.py` | our own (tonyd2wild speed-night harness) | ours |
 
 ## References consulted (no code copied unless listed above)
