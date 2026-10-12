@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="318" viewBox="0 0 900 318" role="img" aria-label="Single stream: decode tok/s by prompt, TP2 vs TP4 lane (median of 3)">
+<rect width="900" height="318" fill="#1a1a19"/>
+<text x="24.0" y="30.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="16" fill="#ffffff" text-anchor="start" font-weight="600">Single stream: decode tok/s by prompt, TP2 vs TP4 lane (median of 3)</text>
+<rect x="24" y="47" width="12" height="12" rx="3" fill="#3987e5"/>
+<text x="41.0" y="57.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12" fill="#c3c2b7" text-anchor="start" font-weight="normal">TP2 lane (2 Sparks)</text>
+<rect x="199.8" y="47" width="12" height="12" rx="3" fill="#d95926"/>
+<text x="216.8" y="57.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12" fill="#c3c2b7" text-anchor="start" font-weight="normal">TP4 lane (4 Sparks)</text>
+<line x1="64" x2="864" y1="260.0" y2="260.0" stroke="#383835" stroke-width="1"/>
+<text x="56.0" y="264.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="end" font-weight="normal">0</text>
+<line x1="64" x2="864" y1="226.0" y2="226.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="56.0" y="230.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="end" font-weight="normal">50</text>
+<line x1="64" x2="864" y1="192.0" y2="192.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="56.0" y="196.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="end" font-weight="normal">100</text>
+<line x1="64" x2="864" y1="158.0" y2="158.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="56.0" y="162.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="end" font-weight="normal">150</text>
+<line x1="64" x2="864" y1="124.0" y2="124.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="56.0" y="128.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="end" font-weight="normal">200</text>
+<line x1="64" x2="864" y1="90.0" y2="90.0" stroke="#2c2c2a" stroke-width="1"/>
+<text x="56.0" y="94.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="end" font-weight="normal">250</text>
+<path d="M76.6,260.0 V141.5 Q76.6,137.5 80.6,137.5 H95.4 Q99.4,137.5 99.4,141.5 V260.0 Z" fill="#d95926"/>
+<text x="88.0" y="131.5" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">180</text>
+<path d="M101.4,260.0 V189.3 Q101.4,185.3 105.4,185.3 H120.1 Q124.1,185.3 124.1,189.3 V260.0 Z" fill="#3987e5"/>
+<text x="112.7" y="179.3" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">110</text>
+<text x="100.4" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">count 100</text>
+<path d="M149.4,260.0 V146.5 Q149.4,142.5 153.4,142.5 H168.1 Q172.1,142.5 172.1,146.5 V260.0 Z" fill="#d95926"/>
+<text x="160.7" y="136.5" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">173</text>
+<path d="M174.1,260.0 V190.9 Q174.1,186.9 178.1,186.9 H192.8 Q196.8,186.9 196.8,190.9 V260.0 Z" fill="#3987e5"/>
+<text x="185.5" y="180.9" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">107</text>
+<text x="173.1" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">count 300</text>
+<path d="M222.1,260.0 V177.6 Q222.1,173.6 226.1,173.6 H240.8 Q244.8,173.6 244.8,177.6 V260.0 Z" fill="#d95926"/>
+<text x="233.5" y="167.6" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">127</text>
+<path d="M246.8,260.0 V208.2 Q246.8,204.2 250.8,204.2 H265.5 Q269.5,204.2 269.5,208.2 V260.0 Z" fill="#3987e5"/>
+<text x="258.2" y="198.2" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">82</text>
+<text x="245.8" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">code</text>
+<path d="M294.8,260.0 V173.8 Q294.8,169.8 298.8,169.8 H313.5 Q317.5,169.8 317.5,173.8 V260.0 Z" fill="#d95926"/>
+<text x="306.2" y="163.8" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">133</text>
+<path d="M319.5,260.0 V206.8 Q319.5,202.8 323.5,202.8 H338.3 Q342.3,202.8 342.3,206.8 V260.0 Z" fill="#3987e5"/>
+<text x="330.9" y="196.8" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">84</text>
+<text x="318.5" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">json</text>
+<path d="M367.5,260.0 V186.8 Q367.5,182.8 371.5,182.8 H386.3 Q390.3,182.8 390.3,186.8 V260.0 Z" fill="#d95926"/>
+<text x="378.9" y="176.8" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">114</text>
+<path d="M392.3,260.0 V214.9 Q392.3,210.9 396.3,210.9 H411.0 Q415.0,210.9 415.0,214.9 V260.0 Z" fill="#3987e5"/>
+<text x="403.6" y="204.9" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">72</text>
+<text x="391.3" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">sql</text>
+<path d="M440.3,260.0 V200.6 Q440.3,196.6 444.3,196.6 H459.0 Q463.0,196.6 463.0,200.6 V260.0 Z" fill="#d95926"/>
+<text x="451.6" y="190.6" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">93</text>
+<path d="M465.0,260.0 V223.0 Q465.0,219.0 469.0,219.0 H483.7 Q487.7,219.0 487.7,223.0 V260.0 Z" fill="#3987e5"/>
+<text x="476.4" y="213.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">60</text>
+<text x="464.0" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">tool call</text>
+<path d="M513.0,260.0 V181.6 Q513.0,177.6 517.0,177.6 H531.7 Q535.7,177.6 535.7,181.6 V260.0 Z" fill="#d95926"/>
+<text x="524.4" y="171.6" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">121</text>
+<path d="M537.7,260.0 V210.4 Q537.7,206.4 541.7,206.4 H556.5 Q560.5,206.4 560.5,210.4 V260.0 Z" fill="#3987e5"/>
+<text x="549.1" y="200.4" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">79</text>
+<text x="536.7" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">math</text>
+<path d="M585.7,260.0 V184.0 Q585.7,180.0 589.7,180.0 H604.5 Q608.5,180.0 608.5,184.0 V260.0 Z" fill="#d95926"/>
+<text x="597.1" y="174.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">118</text>
+<path d="M610.5,260.0 V213.9 Q610.5,209.9 614.5,209.9 H629.2 Q633.2,209.9 633.2,213.9 V260.0 Z" fill="#3987e5"/>
+<text x="621.8" y="203.9" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">74</text>
+<text x="609.5" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">YAML</text>
+<path d="M658.5,260.0 V210.6 Q658.5,206.6 662.5,206.6 H677.2 Q681.2,206.6 681.2,210.6 V260.0 Z" fill="#d95926"/>
+<text x="669.8" y="200.6" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">79</text>
+<path d="M683.2,260.0 V229.0 Q683.2,225.0 687.2,225.0 H701.9 Q705.9,225.0 705.9,229.0 V260.0 Z" fill="#3987e5"/>
+<text x="694.5" y="219.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">52</text>
+<text x="682.2" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">summary</text>
+<path d="M731.2,260.0 V219.5 Q731.2,215.5 735.2,215.5 H749.9 Q753.9,215.5 753.9,219.5 V260.0 Z" fill="#d95926"/>
+<text x="742.5" y="209.5" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">65</text>
+<path d="M755.9,260.0 V234.1 Q755.9,230.1 759.9,230.1 H774.6 Q778.6,230.1 778.6,234.1 V260.0 Z" fill="#3987e5"/>
+<text x="767.3" y="224.1" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">44</text>
+<text x="754.9" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">prose</text>
+<path d="M803.9,260.0 V219.9 Q803.9,215.9 807.9,215.9 H822.6 Q826.6,215.9 826.6,219.9 V260.0 Z" fill="#d95926"/>
+<text x="815.3" y="209.9" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="normal">65</text>
+<path d="M828.6,260.0 V234.1 Q828.6,230.1 832.6,230.1 H847.4 Q851.4,230.1 851.4,234.1 V260.0 Z" fill="#3987e5"/>
+<text x="840.0" y="224.1" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="600">44</text>
+<text x="827.6" y="278.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="11" fill="#c3c2b7" text-anchor="middle" font-weight="normal">narrative</text>
+<text x="24.0" y="310.0" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="10" fill="#898781" text-anchor="start" font-weight="normal">2x DGX Spark TP2 (Reddie + Spark4), EXL3 tr3 4bpw (brandonmusic), dense q4, 4 streams, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11</text>
+</svg>

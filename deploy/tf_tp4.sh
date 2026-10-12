@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# tf_tp4.sh -- GLM-5.3-Flash on our TensorFold build, tensor-parallel 4 over the four Sparks.
+# tf_tp4.sh -- GLM-5.3-Flash on our TensorFold build, tensor-parallel 4 over the four Sparks (TP=2: Reddie and Spark4).
 # Run on Reddie (rank 0, HTTP on :8000). Followers start first; every rank reads the weights
 # from the same path (local on Reddie, NFS from Reddie on the others).
 #
 #   tf_tp4.sh serve | stop | status | logs [rank]
 #
-# Env overrides: CONTEXT (500000), EFFORT (low), VISION (1), DRAFTS (mtp|none), KV (fp8|bf16), EXTRA (more serve args)
+# Env overrides: TP (4|2), CONTEXT (500000), EFFORT (low), VISION (1), DRAFTS (mtp|none), KV (fp8|bf16), EXTRA (more serve args)
 set -euo pipefail
 
 SRC=${SRC:-/srv/glm53-tensorfold/src}            # our engine tree, the same path on every node
@@ -27,18 +27,27 @@ PARALLEL=${PARALLEL:-1}                          # concurrent requests (the mult
 # PROFILE=multi: the multi-stream engine's four-Spark settings (MiaAI-Lab's GLM patches, Apache-2.0, credited in
 # CREDITS.md), on our checkpoint: 8 streams, FP8 KV (TF_GLM_KV), RoCE all-gathers on the switch, split prefill, copy drafts.
 PROFILE=${PROFILE:-single}
+TP=${TP:-4}                                      # 4: all four Sparks; 2: Reddie (rank 0) and Spark4 (rank 1)
 if [[ $PROFILE == multi ]]; then
-  PARALLEL=${PARALLEL_MULTI:-8}
   SRC=${SRC_MULTI:-/srv/glm53-tensorfold/src-mia}      # the multi-stream engine's tree (see engine-multi/)
   CACHE=${CACHE_MULTI:-/srv/glm53-tensorfold/cache-mia}
   EXTRA="--max-tokens ${MAX_TOKENS:-32768} $EXTRA"
+  # the settings that depend on the Spark count (MiaAI-Lab's defaults for each): streams, the prompt split's own front and
+  # micro-batches, 4,096-row prompt chunks and the decode side stream at four Sparks; the kept-state pool and reserve
+  if (( TP == 4 )); then
+    PARALLEL=${PARALLEL_MULTI:-8}
+    TP_ENV="TF_GLM_PROMPT_OWN_FRONT=1 TF_GLM_PROMPT_MICROBATCH=1 TF_GLM_PREFILL_ROWS=4096 TF_GLM_SIDE=1 TF_GLM_MULTI_WINDOW=64 \
+TF_GLM_CACHE_GIB=32 TENSORFOLD_MEMORY_RESERVE_GIB=${RESERVE:-19.6}"
+  else
+    PARALLEL=${PARALLEL_MULTI:-4}
+    TP_ENV="TF_GLM_CACHE_GIB=12.5 TENSORFOLD_MEMORY_RESERVE_GIB=${RESERVE:-14.5}"
+  fi
   EXTRA_ENV="TF_GLM_MTP=auto TF_GLM_KV=$KV TF_GLM_COMM=roce TF_ROCE_HCA=rocep1s0f0 TF_ROCE_GID_INDEX=3 TF_ROCE_RING=0 \
 TF_ROCE_MAX_KB=${ROCE_MAX_KB:-1024} TF_ROCE_WAIT_S=300 TF_GLM_COPY_DRAFTS=1 TF_GLM_COPY_MAX=15 TF_GLM_DFLASH_POLICY=fnc7:0.3 \
-TF_GLM_HC_SPLIT=1 TF_GLM_PREFILL_OVERLAP=2 TF_GLM_PROMPT_OWN_FRONT=1 TF_GLM_PROMPT_MICROBATCH=1 TF_GLM_PREFILL_ROWS=4096 \
-TF_GLM_PROMPT_PARTIALS=fp32 TF_GLM_SIDE=1 TF_GLM_MSA=0 TF_GLM_KDA_CHUNKED=1 TF_GLM_WIDE_GRAPHS=16 TF_GLM_COPY_REPLY_MATCH=16 \
-TF_GLM_MULTI_LONE=0 TF_GLM_MULTI_WINDOW=64 TF_GLM_CACHE_ENTRIES=32 TF_GLM_MULTI_PREFILL=1 TF_GLM_STREAM_SMOOTH=1 \
-TF_GLM_STREAM_SMOOTH_MS=400 TF_GLM_FILL_BUDGET_MS=200 TF_GLM_FILL_DRAFTS=1 TF_GLM_L2PF=1 TF_GLM_SHARED_PREFIX=1 \
-TF_GLM_CACHE_GIB=32 TENSORFOLD_MEMORY_RESERVE_GIB=${RESERVE:-19.6} TENSORFOLD_NUCLEUS_UNION=1 TENSORFOLD_NO_UPDATE_CHECK=1 $EXTRA_ENV"
+TF_GLM_HC_SPLIT=1 TF_GLM_PREFILL_OVERLAP=2 TF_GLM_PROMPT_PARTIALS=fp32 TF_GLM_MSA=0 TF_GLM_KDA_CHUNKED=1 \
+TF_GLM_WIDE_GRAPHS=16 TF_GLM_COPY_REPLY_MATCH=16 TF_GLM_MULTI_LONE=0 TF_GLM_CACHE_ENTRIES=32 TF_GLM_MULTI_PREFILL=1 \
+TF_GLM_STREAM_SMOOTH=1 TF_GLM_STREAM_SMOOTH_MS=400 TF_GLM_FILL_BUDGET_MS=200 TF_GLM_FILL_DRAFTS=1 TF_GLM_L2PF=1 \
+TF_GLM_SHARED_PREFIX=1 $TP_ENV TENSORFOLD_NUCLEUS_UNION=1 TENSORFOLD_NO_UPDATE_CHECK=1 $EXTRA_ENV"
 fi
 # the image's CUDA toolkit lacks the cuSPARSE/cuSOLVER headers torch's CUDAContext includes; torch's pip bundle has them
 CUDA_PIP_INC=/cache/cuda_extra_inc     # only the headers the toolkit lacks, copied from torch's pip bundle (nvidia/cu13/include)
@@ -53,7 +62,8 @@ run() {  # run <rank> <command>
 }
 
 serve_args() {  # serve_args <rank>
-  local r=$1 a="/model --tp 4 --rank $r --master $MASTER --master-port $MASTER_PORT --context $CONTEXT"
+  local r=$1
+  local a="/model --tp $TP --rank $r --master $MASTER --master-port $MASTER_PORT --context $CONTEXT"
   a+=" --reasoning-effort $EFFORT"
   [[ $PROFILE == single ]] && a+=" --kv-dtype $KV"         # the multi engine reads TF_GLM_KV instead
   (( PARALLEL > 1 )) && a+=" --parallel $PARALLEL"
@@ -91,9 +101,9 @@ case "${1:-}" in
     # stop every rank first (rank 0 first): a follower started beside the old rank 0 joins its rendezvous and dies
     for r in 0 1 2 3; do run "$r" "docker rm -f $NAME-r$r >/dev/null 2>&1 || true"; done
     sleep 3
-    for r in 3 2 1; do start_rank "$r"; done
+    for (( r = TP - 1; r >= 1; r-- )); do start_rank "$r"; done
     start_rank 0
-    echo "rank 0 serves http://0.0.0.0:$PORT as $SERVED (context $CONTEXT, effort $EFFORT, vision $VISION, drafts $DRAFTS, kv $KV, profile $PROFILE, parallel $PARALLEL)"
+    echo "rank 0 serves http://0.0.0.0:$PORT as $SERVED (tp $TP, context $CONTEXT, effort $EFFORT, vision $VISION, drafts $DRAFTS, kv $KV, profile $PROFILE, parallel $PARALLEL)"
     ;;
   stop)
     for r in 0 1 2 3; do run "$r" "docker rm -f $NAME-r$r >/dev/null 2>&1 || true"; done

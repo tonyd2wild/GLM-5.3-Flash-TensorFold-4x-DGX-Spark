@@ -1,0 +1,230 @@
+{
+ "tfq-single-vs-vllm": {
+  "kind": "prefill",
+  "title": "Single stream: decode tok/s by prompt (median of 3)",
+  "cats": [
+   "count 100",
+   "count 300",
+   "code",
+   "json",
+   "sql",
+   "tool call",
+   "math",
+   "summary",
+   "prose",
+   "narrative"
+  ],
+  "new": [
+   180.16,
+   172.83,
+   127.03,
+   132.69,
+   113.55,
+   93.21,
+   121.15,
+   78.55,
+   65.44,
+   64.86
+  ],
+  "old": [
+   181.72,
+   165.65,
+   120.52,
+   120.54,
+   109.14,
+   67.92,
+   141.78,
+   70.59,
+   60.98,
+   60.83
+  ],
+  "new_label": "TensorFold (EXL3, q4 dense)",
+  "old_label": "vLLM knapcio stack (reference)",
+  "note": "4x DGX Spark TP4, EXL3 tr3 4bpw (brandonmusic) over NFS, dense q4, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tfq-sweep-vs-vllm": {
+  "kind": "sweep",
+  "title": "Mixed real prompts, C1-C6: aggregate tok/s (median of 3 rounds)",
+  "x": [
+   "C1",
+   "C2",
+   "C3",
+   "C4",
+   "C5",
+   "C6"
+  ],
+  "series": [
+   [
+    "TensorFold (EXL3, q4 dense)",
+    [
+     123.96,
+     106.05,
+     117.0,
+     175.76,
+     143.41,
+     151.24
+    ]
+   ],
+   [
+    "vLLM knapcio stack (reference)",
+    [
+     115.39,
+     103.36,
+     104.51,
+     159.89,
+     134.51,
+     141.17
+    ]
+   ]
+  ],
+  "note": "4x DGX Spark TP4, EXL3 tr3 4bpw (brandonmusic) over NFS, dense q4, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tfq-types-vs-fp8": {
+  "kind": "decode",
+  "title": "C1-C6 by prompt type: aggregate tok/s, q4 vs FP8 dense layers (same EXL3 checkpoint)",
+  "types": [
+   "prose",
+   "code",
+   "math",
+   "json",
+   "count 100",
+   "YAML"
+  ],
+  "levels": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "new": {
+   "prose": [
+    65.18,
+    92.78,
+    113.65,
+    130.59,
+    141.8,
+    152.25
+   ],
+   "code": [
+    126.41,
+    166.44,
+    205.34,
+    218.34,
+    242.08,
+    255.68
+   ],
+   "math": [
+    111.25,
+    158.74,
+    198.58,
+    226.26,
+    248.03,
+    270.69
+   ],
+   "json": [
+    125.49,
+    171.96,
+    229.48,
+    265.58,
+    266.53,
+    301.41
+   ],
+   "count 100": [
+    158.25,
+    235.69,
+    300.09,
+    348.44,
+    382.55,
+    438.74
+   ],
+   "YAML": [
+    93.68,
+    156.25,
+    203.66,
+    223.11,
+    258.6,
+    287.52
+   ]
+  },
+  "old": {
+   "prose": [
+    57.54,
+    84.69,
+    106.01,
+    121.96,
+    135.01,
+    143.74
+   ],
+   "code": [
+    115.76,
+    170.1,
+    188.23,
+    232.95,
+    230.01,
+    265.51
+   ],
+   "math": [
+    100.74,
+    149.13,
+    179.25,
+    204.54,
+    218.39,
+    256.49
+   ],
+   "json": [
+    113.67,
+    174.95,
+    216.32,
+    239.19,
+    267.15,
+    301.92
+   ],
+   "count 100": [
+    147.35,
+    232.23,
+    299.3,
+    347.74,
+    368.82,
+    430.36
+   ],
+   "YAML": [
+    91.11,
+    140.53,
+    172.82,
+    207.15,
+    250.17,
+    255.04
+   ]
+  },
+  "new_label": "q4 dense (default)",
+  "old_label": "FP8 dense",
+  "note": "4x DGX Spark TP4, EXL3 tr3 4bpw (brandonmusic) over NFS, dense q4, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tfq-prefill-vs-vllm": {
+  "kind": "prefill",
+  "title": "Cold prefill, tok/s",
+  "cats": [
+   "5K",
+   "29K",
+   "113K",
+   "498K"
+  ],
+  "new": [
+   2447.1,
+   2779.5,
+   2807.8,
+   2611.4
+  ],
+  "old": [
+   2378.1,
+   2797.6,
+   2794.2,
+   2461.5
+  ],
+  "new_label": "TensorFold (EXL3, q4 dense)",
+  "old_label": "vLLM knapcio stack (reference)",
+  "note": "salted prompts, one output token"
+ }
+}

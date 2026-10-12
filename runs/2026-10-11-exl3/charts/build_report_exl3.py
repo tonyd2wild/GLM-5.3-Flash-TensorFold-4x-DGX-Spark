@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""build_report_multi.py MULTI.json SINGLE.json VLLM.json OUTDIR -- tables and chart specs (for make_charts.py) of the
-multi-stream engine's baseline, against the vLLM knapcio stack and our one-request-at-a-time build."""
+"""build_report_exl3.py EXL3.json NVFP4.json VLLM.json OUTDIR -- tables and chart specs (for make_charts.py) of the
+multi-stream engine on the EXL3 checkpoint, against the same engine on our NVFP4 derisked pack and the vLLM knapcio stack."""
 import json, os, sys
 
 mu = json.load(open(sys.argv[1]))

@@ -1,0 +1,233 @@
+{
+ "tp2-single-vs-tp4": {
+  "kind": "prefill",
+  "title": "Single stream: decode tok/s by prompt, TP2 vs TP4 lane (median of 3)",
+  "cats": [
+   "count 100",
+   "count 300",
+   "code",
+   "json",
+   "sql",
+   "tool call",
+   "math",
+   "YAML",
+   "summary",
+   "prose",
+   "narrative"
+  ],
+  "new": [
+   109.89,
+   107.45,
+   82.05,
+   84.06,
+   72.14,
+   60.3,
+   78.79,
+   73.67,
+   51.5,
+   43.96,
+   43.97
+  ],
+  "old": [
+   180.16,
+   172.83,
+   127.03,
+   132.69,
+   113.55,
+   93.21,
+   121.15,
+   117.61,
+   78.55,
+   65.44,
+   64.86
+  ],
+  "new_label": "TP2 lane (2 Sparks)",
+  "old_label": "TP4 lane (4 Sparks)",
+  "note": "2x DGX Spark TP2 (Reddie + Spark4), EXL3 tr3 4bpw (brandonmusic), dense q4, 4 streams, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tp2-sweep-vs-tp4": {
+  "kind": "sweep",
+  "title": "Mixed real prompts, C1-C6: aggregate tok/s (median of 3 rounds)",
+  "x": [
+   "C1",
+   "C2",
+   "C3",
+   "C4",
+   "C5",
+   "C6"
+  ],
+  "series": [
+   [
+    "TP2 lane (2 Sparks, 4 streams)",
+    [
+     77.08,
+     68.28,
+     73.35,
+     108.2,
+     85.8,
+     90.66
+    ]
+   ],
+   [
+    "TP4 lane (4 Sparks, 8 streams)",
+    [
+     123.96,
+     106.05,
+     117.0,
+     175.76,
+     143.41,
+     151.24
+    ]
+   ]
+  ],
+  "note": "2x DGX Spark TP2 (Reddie + Spark4), EXL3 tr3 4bpw (brandonmusic), dense q4, 4 streams, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tp2-types-vs-tp4": {
+  "kind": "decode",
+  "title": "C1-C6 by prompt type: aggregate tok/s, TP2 lane vs TP4 lane",
+  "types": [
+   "prose",
+   "code",
+   "math",
+   "json",
+   "count 100",
+   "YAML"
+  ],
+  "levels": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "new": {
+   "prose": [
+    42.59,
+    61.36,
+    73.74,
+    82.43,
+    70.73,
+    73.53
+   ],
+   "code": [
+    79.22,
+    105.18,
+    127.65,
+    139.62,
+    123.05,
+    130.2
+   ],
+   "math": [
+    71.39,
+    104.93,
+    124.32,
+    147.12,
+    119.25,
+    127.9
+   ],
+   "json": [
+    80.29,
+    113.35,
+    136.09,
+    160.16,
+    138.48,
+    149.06
+   ],
+   "count 100": [
+    101.75,
+    162.47,
+    180.18,
+    238.77,
+    193.92,
+    213.21
+   ],
+   "YAML": [
+    61.0,
+    102.79,
+    120.72,
+    163.74,
+    114.36,
+    133.56
+   ]
+  },
+  "old": {
+   "prose": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "code": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "math": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "json": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "count 100": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "YAML": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "new_label": "TP2 lane (4 streams)",
+  "old_label": "TP4 lane (8 streams)",
+  "note": "2x DGX Spark TP2 (Reddie + Spark4), EXL3 tr3 4bpw (brandonmusic), dense q4, 4 streams, FP8 KV, 500K context, effort low, temperature 0, 2026-10-11"
+ },
+ "tp2-prefill-vs-tp4": {
+  "kind": "prefill",
+  "title": "Cold prefill, tok/s",
+  "cats": [
+   "5K",
+   "29K",
+   "113K",
+   "498K"
+  ],
+  "new": [
+   1720.9,
+   1827.0,
+   1780.8,
+   1467.4
+  ],
+  "old": [
+   2447.1,
+   2779.5,
+   2807.8,
+   2611.4
+  ],
+  "new_label": "TP2 lane",
+  "old_label": "TP4 lane",
+  "note": "salted prompts, one output token"
+ }
+}
