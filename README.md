@@ -4,6 +4,10 @@
 > [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine) and Brandon M. Music's EXL3 checkpoint.
 > Everyone whose work this builds on: [CREDITS.md](CREDITS.md).
 
+**Weights attribution (ShapleyMcg License v1.0, Schedule B):**
+
+> This work includes or was produced using ShapleyMcg, created by Brandon M. Music (https://github.com/brandonmmusic-max/shapleymcg). ShapleyMcg is licensed under the ShapleyMcg License v1.0, an attribution-required license that grants no rights to the person known as "0xSero." Use of ShapleyMcg without this attribution is unlicensed.
+
 GLM-5.3-Flash served by TensorFold across four DGX Sparks (or two): eight requests at once with a 500K window each,
 vision, FP8 KV cache, RoCE all-gathers. Reddie is the head node and serves the weights to the other Sparks over NFS.
 On this fleet and the same harness it is ahead of our vLLM stack at every concurrency level.
@@ -25,7 +29,7 @@ Both lanes serve the same thing:
 | | |
 |---|---|
 | engine | [`engine-multi/`](engine-multi/): TensorFold v0.6.0 + MiaAI-Lab's GLM patches (Apache-2.0) + our changes |
-| weights | [`brandonmusic/GLM-5.3-Flash-tr3-4bpw`](https://huggingface.co/brandonmusic/GLM-5.3-Flash-tr3-4bpw) (164 GiB), over NFS from Reddie |
+| weights | [`brandonmusic/GLM-5.3-Flash-tr3-4bpw`](https://huggingface.co/brandonmusic/GLM-5.3-Flash-tr3-4bpw) (164 GiB), produced with Brandon M. Music's [ShapleyMcg](https://github.com/brandonmmusic-max/shapleymcg); over NFS from Reddie |
 | formats | routed experts EXL3 4-bit (`mcg` trellis); attention, indexer, shared and dense MLP as 4-bit groups of 64 quantized at load (`TF_GLM_DENSE=q4`); head FP8; `kv_b`, embedding, vision tower BF16 |
 | vision | on: GLM's vision tower on rank 0 |
 | thinking | `reasoning_effort: low` by default |
