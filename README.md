@@ -1,13 +1,5 @@
 # GLM-5.3-Flash on TensorFold, TP4 and TP2 on DGX Spark (EXL3)
 
-> **Special credit:** [tonyd2wild](https://github.com/tonyd2wild) (the Spark serving recipe this fleet runs),
-> [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine) and Brandon M. Music's EXL3 checkpoint.
-> Everyone whose work this builds on: [CREDITS.md](CREDITS.md).
-
-**Weights attribution (ShapleyMcg License v1.0, Schedule B):**
-
-> This work includes or was produced using ShapleyMcg, created by Brandon M. Music (https://github.com/brandonmmusic-max/shapleymcg). ShapleyMcg is licensed under the ShapleyMcg License v1.0, an attribution-required license that grants no rights to the person known as "0xSero." Use of ShapleyMcg without this attribution is unlicensed.
-
 GLM-5.3-Flash served by TensorFold across four DGX Sparks (or two): eight requests at once with a 500K window each,
 vision, FP8 KV cache, RoCE all-gathers. Reddie is the head node and serves the weights to the other Sparks over NFS.
 On this fleet and the same harness it is ahead of our vLLM stack at every concurrency level.
@@ -129,3 +121,13 @@ Each piece's origin is in [PROVENANCE.md](PROVENANCE.md).
 | Spark4 | 1 | 1 | weights over NFS |
 | Asusi | 2 | | weights over NFS |
 | Bluey | 3 | | weights over NFS |
+
+## Credits
+
+> **Special credit:** [tonyd2wild](https://github.com/tonyd2wild) (the Spark serving recipe this fleet runs),
+> [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine) and Brandon M. Music's EXL3 checkpoint.
+> Everyone whose work this builds on: [CREDITS.md](CREDITS.md).
+
+**Weights attribution (ShapleyMcg License v1.0, Schedule B):**
+
+> This work includes or was produced using ShapleyMcg, created by Brandon M. Music (https://github.com/brandonmmusic-max/shapleymcg). ShapleyMcg is licensed under the ShapleyMcg License v1.0, an attribution-required license that grants no rights to the person known as "0xSero." Use of ShapleyMcg without this attribution is unlicensed.
