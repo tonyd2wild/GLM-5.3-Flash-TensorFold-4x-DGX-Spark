@@ -1,3 +1,4 @@
+# Added by 2Wild Studios (tonyd2wild), 2026-10-11, to MiaAI-Lab's GLM-5.3-Flash patch series for TensorFold v0.6.0 (Apache-2.0): see engine-multi/CHANGES-2WILD.md.
 """ModelOpt mixed-precision GLM-5.3-Flash checkpoints: NVFP4 routed experts and 8-bit projections as stored.
 
 The pack this reads (``quant_method: modelopt``, ``quant_algo: MIXED_PRECISION``) stores

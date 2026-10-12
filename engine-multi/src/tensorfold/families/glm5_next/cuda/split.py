@@ -1,3 +1,4 @@
+# Modified by 2Wild Studios (tonyd2wild), 2026-10-11, on top of MiaAI-Lab's GLM-5.3-Flash patch series for TensorFold v0.6.0 (Apache-2.0): see engine-multi/CHANGES-2WILD.md.
 """Read each rank directly from checkpoint bytes or a saved rank folder, preserving packed groups at every split boundary."""
 
 from __future__ import annotations

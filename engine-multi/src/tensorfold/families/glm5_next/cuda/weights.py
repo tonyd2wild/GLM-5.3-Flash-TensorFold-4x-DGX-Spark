@@ -1,3 +1,4 @@
+# Modified by 2Wild Studios (tonyd2wild), 2026-10-11, on top of MiaAI-Lab's GLM-5.3-Flash patch series for TensorFold v0.6.0 (Apache-2.0): see engine-multi/CHANGES-2WILD.md.
 """Load one rank of MLX affine 4-bit weights, EXL3 routed experts with BF16 elsewhere, or a ModelOpt pack (NVFP4 routed experts, 8-bit projections as stored), preserving heads and quantization groups at split boundaries."""
 
 from __future__ import annotations

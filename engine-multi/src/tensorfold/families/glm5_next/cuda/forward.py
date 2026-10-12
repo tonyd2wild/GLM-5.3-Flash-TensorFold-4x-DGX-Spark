@@ -1,3 +1,4 @@
+# Modified by 2Wild Studios (tonyd2wild), 2026-10-11, on top of MiaAI-Lab's GLM-5.3-Flash patch series for TensorFold v0.6.0 (Apache-2.0): see engine-multi/CHANGES-2WILD.md.
 """GLM-5.3-Flash's tensor-parallel forward and commit; kernels keep rows apart, so row r has the serial step's bits."""
 
 from __future__ import annotations

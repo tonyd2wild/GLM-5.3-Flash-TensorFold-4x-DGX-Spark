@@ -4,6 +4,8 @@ GLM-5.3-Flash served by TensorFold across four DGX Sparks (or two): eight reques
 vision, FP8 KV cache, RoCE all-gathers. Reddie is the head node and serves the weights to the other Sparks over NFS.
 On this fleet and the same harness it is ahead of our vLLM stack at every concurrency level.
 
+**The engine is [MiaAI-Lab's GLM-5.3-Flash patch series](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold)** (106 patches, about 8,000 changed lines) on [ashhart/TensorFold](https://github.com/ashhart/TensorFold) v0.6.0. Our changes on top are about 300 lines in 10 files (ModelOpt checkpoint support, vision on self-marking templates), listed file by file in [`engine-multi/CHANGES-2WILD.md`](engine-multi/CHANGES-2WILD.md). What this repo adds is the four- and two-Spark serving setup, the launchers, the checkpoint choice and the benchmarks.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="runs/2026-10-11-exl3-q4-tp4/charts/tf-vs-vllm-dark.svg">
   <img alt="GLM-5.3-Flash on 4x DGX Spark, TensorFold against vLLM. Mixed real prompts C1 to C6, aggregate tok/s: 124 vs 115, 106 vs 103, 117 vs 105, 176 vs 160, 143 vs 135, 151 vs 141. Cold prefill: 2.45k vs 2.38k, 2.78k vs 2.80k, 2.81k vs 2.79k, 2.61k vs 2.46k tok/s. One request at a time: code 127 vs 121, json 133 vs 121, sql 114 vs 109, prose 65 vs 61, story 65 vs 61, summary 79 vs 71, count to 300 173 vs 166, count to 100 180 vs 182, math 121 vs 142." src="runs/2026-10-11-exl3-q4-tp4/charts/tf-vs-vllm-light.svg" width="880">
@@ -74,7 +76,7 @@ At C5 and C6 the TP2 lane's fifth and sixth requests wait for a stream (first to
 
 | build | count to 100 | code | json | prose | mixed C6 | prefill 114K | 500K prompt |
 |---|---|---|---|---|---|---|---|
-| first build: `engine/`, NVFP4 pack, one request at a time | 110.6 | 80.6 | 81.4 | 46.8 | 61.1 | 887 | 646 s |
+| first build (`engine/`, removed from the repo 2026-10-12, in git history), NVFP4 pack, one request at a time | 110.6 | 80.6 | 81.4 | 46.8 | 61.1 | 887 | 646 s |
 | `engine-multi/`, NVFP4 pack, 8 streams | 149.9 | 109.0 | 113.0 | 54.4 | 134.4 | 2,038 | 259 s |
 | EXL3, FP8 dense | 163.7 | 101.4 | 119.5 | 54.1 | 141.1 | 2,561 | 208 s |
 | **EXL3, q4 dense (default)** | **180.2** | **127.0** | **132.7** | **65.4** | **151.2** | **2,808** | **191 s** |
@@ -92,7 +94,8 @@ Every run's tables, raw results and charts: [`runs/`](runs/) (`2026-10-11-baseli
 
 1. **The engine.** `engine-multi/` is a squashed subtree of TensorFold v0.6.0 with MiaAI-Lab's 106 GLM patches
    (concurrent requests, TP-N, FP8 KV, RoCE all-gathers, split prefill, copy drafts, vision, 4-bit dense layers), kept
-   as published with their notices.
+   as published. Their NOTICE is kept verbatim in `engine-multi/NOTICE-MiaAI-Lab`; every change we made on top is listed in
+   `engine-multi/CHANGES-2WILD.md`, and each changed file says so.
 2. **The checkpoint.** EXL3 is read by TensorFold's GLM EXL3 expert kernels; the BF16 non-expert matrices are quantized
    at load. For the NVFP4 comparison we added a ModelOpt reader and splitter: NVFP4 routed experts on the engine's grouped
    NVFP4 kernels, MXFP8 and FP8-block projections on its 8-bit kernels.
@@ -108,7 +111,6 @@ Each piece's origin is in [PROVENANCE.md](PROVENANCE.md).
 | path | what |
 |---|---|
 | `engine-multi/` | the serving engine: TensorFold v0.6.0 + MiaAI-Lab's GLM patches (Apache-2.0) + our changes |
-| `engine/` | the first, one-at-a-time build: TensorFold Python line (ashhart, Apache-2.0) with our changes |
 | `deploy/` | `serve_exl3.sh` (what serves, `TP=4` or `TP=2`) and `tf_tp4.sh`, the launcher (head node, NFS weights, drafts, vision, context, effort, port, lane settings) |
 | `bench/` | the speed-night harness (per-type C1–C6 sweep, vision check) and `qcheck.py`, the quality check |
 | `runs/` | each run's tables, raw results and charts |
@@ -124,8 +126,8 @@ Each piece's origin is in [PROVENANCE.md](PROVENANCE.md).
 
 ## Credits
 
-> **Special credit:** [tonyd2wild](https://github.com/tonyd2wild) (the Spark serving recipe this fleet runs),
-> [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine) and Brandon M. Music's EXL3 checkpoint.
+> **Built on:** [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine), [MiaAI-Lab's GLM-5.3-Flash patch series](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold) (the multi-stream GLM engine, with its contributors) and Brandon M. Music's EXL3 checkpoint.
+> Serving setup, launchers and benchmarks: [tonyd2wild](https://github.com/tonyd2wild).
 > Everyone whose work this builds on: [CREDITS.md](CREDITS.md).
 
 **Weights attribution (ShapleyMcg License v1.0, Schedule B):**

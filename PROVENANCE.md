@@ -13,13 +13,15 @@ Where every part of this build comes from. Updated with each change.
 | part | source | license | notes |
 |---|---|---|---|
 | engine | ashhart/TensorFold v0.6.0 | Apache-2.0 | the Python engine |
-| GLM patches | MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold, branch `tp4` @ `d220030` (106 patches) | Apache-2.0 | concurrent requests, TP-N, FP8 KV, RoCE all-gathers, split prefill, copy drafts, vision; kept as published with their notices |
+| GLM patches | MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold, branch `tp4` @ `d220030` (106 patches) | Apache-2.0 | concurrent requests, TP-N, FP8 KV, RoCE all-gathers, split prefill, copy drafts, vision; kept as published, their NOTICE verbatim in `engine-multi/NOTICE-MiaAI-Lab`, our changes on top listed in `engine-multi/CHANGES-2WILD.md` |
 | ModelOpt reader, splitter, family check; NVFP4 experts and 8-bit linears in every forward; CPU test; `TEST.md` | ours | ours, on Apache-2.0 code | ports our derisked pack onto the engine |
 | vision on templates that write their own media markers (`media_template`) | ours | ours, on Apache-2.0 code | |
 
 Updated with `git subtree pull --prefix=engine-multi <tree> mia-derisk --squash`.
 
-## `engine/` (the previous one-at-a-time build)
+## `engine/` (the previous one-at-a-time build): removed 2026-10-12
+
+The first, one-request-at-a-time build was replaced by `engine-multi/` on 2026-10-11 and the `engine/` tree was removed from the repo on 2026-10-12. It stays in the git history. It was the TensorFold Python line (ashhart, Apache-2.0) with our GLM-5.3-Flash TP4 / ModelOpt / vision work. We had removed one third-party author's code from it, and their license file and mentions went with that code. That author is MiaAI-Lab, and their code is the engine this repo now serves (see above). The benchmark rows labelled "first build" were measured on that tree.
 
 ## Removed from the base
 

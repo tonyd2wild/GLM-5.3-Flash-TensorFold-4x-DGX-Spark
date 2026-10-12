@@ -6,3 +6,9 @@ TensorFold is licensed under the Apache License, Version 2.0 (LICENSE) from 0.6.
 Releases up to 0.5.0 were MIT-licensed, and code written before 0.6.0 keeps its
 MIT notice in LICENSES/MIT.txt. Third-party code and its licenses are listed in
 THIRD_PARTY_NOTICES.md.
+
+---------------------------------------------------------------------------------------------------------------------
+This tree also contains MiaAI-Lab's GLM-5.3-Flash patch series (106 patches; https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold,
+branch tp4 @ d220030, Apache-2.0) applied to TensorFold v0.6.0. That project's NOTICE is kept verbatim in NOTICE-MiaAI-Lab.
+The changes 2Wild Studios (tonyd2wild) made on top of that patched tree are listed file by file in CHANGES-2WILD.md, and each
+changed file carries a notice saying so.
