@@ -1,9 +1,8 @@
-# GLM-5.3-Flash on TensorFold, TP4 on 4× DGX Spark (EXL3)
+# GLM-5.3-Flash on TensorFold, TP4 and TP2 on DGX Spark (EXL3)
 
-> **Special credit:** [tonyd2wild](https://github.com/tonyd2wild) (the 4× Spark serving recipe this fleet runs) and
-> [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine). Built on
-> [MiaAI-Lab](https://github.com/MiaAI-Lab/GLM-5.3-Flash-EXL3-2x-DGX-Sparks-TensorFold)'s GLM patches for TensorFold
-> (Apache-2.0) and Brandon M. Music's EXL3 checkpoint. Full ledger: [CREDITS.md](CREDITS.md).
+> **Special credit:** [tonyd2wild](https://github.com/tonyd2wild) (the Spark serving recipe this fleet runs),
+> [ashhart/TensorFold](https://github.com/ashhart/TensorFold) (the engine) and Brandon M. Music's EXL3 checkpoint.
+> Everyone whose work this builds on: [CREDITS.md](CREDITS.md).
 
 GLM-5.3-Flash served by TensorFold across four DGX Sparks (or two): eight requests at once with a 500K window each,
 vision, FP8 KV cache, RoCE all-gathers. Reddie is the head node and serves the weights to the other Sparks over NFS.
