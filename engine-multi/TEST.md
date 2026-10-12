@@ -27,7 +27,7 @@ and with a 64-row window Mia raises `TF_ROCE_MAX_KB` to 1024 and the reserve to 
 rather than rely on duplicate `-e` names:
 
 ```bash
-cd ~/GLM-5.3-Flash-TensorFold-4x-DGX-Spark
+cd ~/GLM-5.3-Flash-TensorFold-DGX-Spark
 sed -e 's/TF_GLM_WIDE_GRAPHS=1 TF_GLM_COPY_REPLY_MATCH=1/TF_GLM_WIDE_GRAPHS=16 TF_GLM_COPY_REPLY_MATCH=16/' \
     -e 's/TF_ROCE_MAX_KB=512/TF_ROCE_MAX_KB=1024/' \
     -e 's/TENSORFOLD_MEMORY_RESERVE_GIB=14.5/TENSORFOLD_MEMORY_RESERVE_GIB=${RESERVE:-14.5}/' \

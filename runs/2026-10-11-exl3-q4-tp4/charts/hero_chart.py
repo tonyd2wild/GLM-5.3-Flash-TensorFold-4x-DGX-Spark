@@ -82,7 +82,7 @@ for mode, t in THEME.items():
     bars(o, t, 672, 122, 496, 250, "Cold prefill: tok/s", pre_c, pre_tf, pre_vl, lambda v: f"{v/1000:.2f}k")
     bars(o, t, 32, 410, 1136, 236, "One request at a time: decode tok/s", s_c, s_tf, s_vl, lambda v: f"{v:.0f}")
     o.append(T(32, H - 12, "TP4 over RoCE, FP8 KV, reasoning_effort low. vLLM: this fleet's knapcio stack on nvidia/GLM-5.3-Flash-NVFP4.  "
-               "github.com/tonyd2wild/GLM-5.3-Flash-TensorFold-4x-DGX-Spark", t, 11, t["muted"]))
+               "github.com/tonyd2wild/GLM-5.3-Flash-TensorFold-DGX-Spark", t, 11, t["muted"]))
     o.append("</svg>")
     open(os.path.join(out, f"tf-vs-vllm-{mode}.svg"), "w").write("\n".join(o))
     print("wrote", f"tf-vs-vllm-{mode}.svg")
